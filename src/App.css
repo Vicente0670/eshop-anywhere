@@ -1,0 +1,92 @@
+:root {
+  --app-scale-icon-title: 2rem;
+  
+  --app-footer-height: 3rem;
+  --app-scale-icon-footer: 1rem;
+}
+
+.app-main {
+  height: 100%;
+  width: 100%;
+
+  .title {
+    padding: 1rem 0;
+    padding-bottom: 50rem;
+    text-align: center;
+    width: 100%;
+
+    h1 {
+      font-weight: normal;
+    }
+
+    h1::after {
+      position: relative;
+      display: inline-block;
+      padding-left: .75rem;
+      height: var(--app-scale-icon-title);
+      width: var(--app-scale-icon-title);
+      content: url("/public/favicon.svg");
+    }
+
+  }
+
+  .app-footer {
+    position: fixed;
+    bottom: 0;
+    height: var(--app-footer-height);
+    width: 100%;
+    background: red;
+    pointer-events: none;
+
+    * {
+      pointer-events: all;
+    }
+
+    .app-footer-title {
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      align-items: center;
+      padding-left: .5rem;
+      height: 50%;
+      width: max-content;
+      background: var(--app-color-bg-3);
+
+      .app-footer-name {
+        color: var(--app-color-accent);
+      }
+
+      .app-footer-name::after {
+        position: absolute; /* Relative until the curve graphic was implemented and added unnecessary padding. */
+        display: inline-block;
+        padding-left: .33rem;
+        aspect-ratio: 1;
+        height: 1rem;
+        content: url("/public/favicon.svg");
+      }
+
+      .app-footer-curve-div {
+        position: relative;
+        right: 0;
+        aspect-ratio: 1;
+        height: 100%;
+        background: var(--app-color-bg-3);
+        mask-image: url("#app-footer-curve-path");
+        transform: translateX(100%);
+      }
+
+    }
+
+    .app-footer-socials {
+      /* do this! */
+    }
+  
+  }
+  
+}
+
+#app-footer-curve-graphic {
+  position: absolute;
+  top: 0;
+  left: 0;
+}

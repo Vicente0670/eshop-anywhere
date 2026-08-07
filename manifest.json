@@ -31,8 +31,8 @@
   "host_permissions": ["<all_urls>"],
 
   "permissions": [
-    "notifications",
     "activeTab",
+    "audio",
     "offscreen",
     "storage",
     "tabs"

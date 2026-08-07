@@ -1,0 +1,84 @@
+:root {
+  --app-color-accent: #f26521;
+  --app-color-header-main: #f26521;
+  --app-color-header-alt: #e78b5d;
+  --app-color-paragraph: #ffe1d2;
+  --app-color-bg-default: #000;
+  --app-color-bg-1: #150d08;
+  --app-color-bg-2: #24160e;
+  --app-color-bg-3: #2d1c12;
+
+  --app-scale-h1: 2rem;
+  --app-scale-h2: 1.75rem;
+  --app-scale-h3: 1.5rem;
+  --app-scale-p: 1rem;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  scroll-behavior: smooth;
+  touch-action: manipulation;
+}
+
+html, body {
+  height: 33rem;
+  width: 22rem;
+  background: var(--app-color-bg-default);
+}
+
+h1, h2, h3, h4, h5, h6, p, a {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+h2, h3, h4, h5, h6 {
+  color: var(--app-color-font-header-alt);
+}
+
+p, a {
+  font-size: var(--app-scale-p);
+}
+
+h1 {
+  font-size: var(--app-scale-h1);
+  color: var(--app-color-header-main);
+}
+
+h2 {
+  font-size: var(--app-scale-h2);
+}
+
+h3 {
+  font-size: var(--app-scale-h3);
+}
+
+p {
+  color: var(--app-color-paragraph);
+}
+
+a {
+  color: var(--app-color-accent);
+}
+
+div {
+  background: var(--app-color-bg-1);
+
+  div {
+    background: var(--app-color-bg-2);
+
+    div {
+      background: var(--app-color-bg-3);
+    }
+  }
+}
+
+main {
+  overflow-y: auto;
+}
+
+@media (prefers-color-scheme: dark) {
+  * {
+    color-scheme: dark;
+  }
+}
+/* then, work on chrome.storage.sync thing to store settings and test those out too */
