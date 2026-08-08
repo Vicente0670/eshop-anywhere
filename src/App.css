@@ -1,7 +1,7 @@
 :root {
   --app-scale-icon-title: 2rem;
   
-  --app-footer-height: 3rem;
+  --app-footer-height: 4rem;
   --app-scale-icon-footer: 1rem;
 }
 
@@ -9,7 +9,10 @@
   height: 100%;
   width: 100%;
 
-  .title {
+  .app-title {
+    display: flex;
+    justify-content: center;
+    align-items: center;
     padding: 1rem 0;
     padding-bottom: 50rem;
     text-align: center;
@@ -19,13 +22,11 @@
       font-weight: normal;
     }
 
-    h1::after {
+    .icon {
       position: relative;
-      display: inline-block;
       padding-left: .75rem;
       height: var(--app-scale-icon-title);
       width: var(--app-scale-icon-title);
-      content: url("/public/favicon.svg");
     }
 
   }
@@ -35,50 +36,106 @@
     bottom: 0;
     height: var(--app-footer-height);
     width: 100%;
-    background: red;
     pointer-events: none;
 
     * {
       pointer-events: all;
     }
 
-    .app-footer-title {
+    .title {
       display: flex;
-      flex-direction: row;
       justify-content: center;
       align-items: center;
-      padding-left: .5rem;
+      padding-left: 1rem;
       height: 50%;
       width: max-content;
       background: var(--app-color-bg-3);
 
-      .app-footer-name {
+      .name {
         color: var(--app-color-accent);
       }
 
-      .app-footer-name::after {
+      .name::after {
         position: absolute; /* Relative until the curve graphic was implemented and added unnecessary padding. */
         display: inline-block;
-        padding-left: .33rem;
+        margin-top: .2rem;
+        margin-left: .5rem;
         aspect-ratio: 1;
         height: 1rem;
-        content: url("/public/favicon.svg");
-      }
-
-      .app-footer-curve-div {
-        position: relative;
-        right: 0;
-        aspect-ratio: 1;
-        height: 100%;
-        background: var(--app-color-bg-3);
-        mask-image: url("#app-footer-curve-path");
-        transform: translateX(100%);
+        content: "";
+        background-image: url("/public/favicon.svg");
+        background-repeat: no-repeat;
+        background-size: contain;
       }
 
     }
 
-    .app-footer-socials {
-      /* do this! */
+    .socials {
+      display: flex;
+      padding-right: .5rem;
+      height: 50%;
+      width: max(15rem, 50%);
+      background: var(--app-color-bg-3);
+      border-top-right-radius: .5rem;
+
+      a:first-child {
+        margin-left: 1rem;
+      }
+
+      a {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: auto 0;
+        margin-left: .5rem;
+        aspect-ratio: 1;
+        height: 1.25rem;
+        border-radius: .625rem;
+        outline: 0px solid #0000ff00;
+        outline-offset: 2px;
+        transition: outline-color ease .25s;
+
+        img {
+          aspect-ratio: 1;
+          height: 1.25rem;
+          border-radius: .625rem;
+          image-rendering: optimizeQuality;
+          transition: filter ease .25s;
+        }
+      }
+
+      a:hover {
+        img {
+          filter: saturate(0) brightness(2);
+          transition: none;
+        }
+      }
+
+      a:focus-visible {
+        outline-width: 2px;
+        outline-color: var(--app-color-accent);
+        transition: none;
+        animation: socialLinkPulse 1s cubic-bezier(.7, 0, .33, 1) infinite;
+
+        img {
+          filter: saturate(0) brightness(2);
+          transition: none;
+        }
+      }
+
+      .curve-div {
+        margin-left: auto;
+      }
+    }
+
+    .curve-div {
+      position: relative;
+      right: 0;
+      aspect-ratio: 1;
+      height: 100%;
+      background: var(--app-color-bg-3);
+      mask-image: url("#app-footer-curve-path");
+      transform: translateX(100%);
     }
   
   }
@@ -89,4 +146,9 @@
   position: absolute;
   top: 0;
   left: 0;
+}
+
+@keyframes socialLinkPulse {
+  0%, 100% { outline-offset: 2px; }
+  50% { outline-offset: 4px; }
 }

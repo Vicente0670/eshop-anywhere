@@ -3,6 +3,12 @@
   --app-color-header-main: #f26521;
   --app-color-header-alt: #e78b5d;
   --app-color-paragraph: #ffe1d2;
+  --app-color-link-default: #f26521;
+  --app-color-link-hover: #f09d73;
+  --app-color-button-text-default: #ee7336;
+  --app-color-button-text-hover: #f09d73;
+  --app-color-button-bg-default: #371505;
+  --app-color-button-bg-hover: #4c1d07;
   --app-color-bg-default: #000;
   --app-color-bg-1: #150d08;
   --app-color-bg-2: #24160e;
@@ -19,6 +25,7 @@
   padding: 0;
   scroll-behavior: smooth;
   touch-action: manipulation;
+  text-rendering: optimizeLegibility;
 }
 
 html, body {
@@ -27,7 +34,7 @@ html, body {
   background: var(--app-color-bg-default);
 }
 
-h1, h2, h3, h4, h5, h6, p, a {
+h1, h2, h3, h4, h5, h6, p, a, button {
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
@@ -57,7 +64,12 @@ p {
 }
 
 a {
-  color: var(--app-color-accent);
+  color: var(--app-color-link-default);
+  text-decoration: underline;
+}
+
+a:hover {
+  color: var(--app-color-link-hover)
 }
 
 div {
@@ -70,6 +82,25 @@ div {
       background: var(--app-color-bg-3);
     }
   }
+}
+
+button {
+  padding: 0 .33rem;
+  border: 1px solid var(--app-color-button-text-default);
+  background: var(--app-color-button-bg-default);
+  font-size: calc(var(--app-scale-p) - .05rem);
+  color: var(--app-color-button-text-default);
+
+  a {
+    color: initial;
+    text-decoration: none;
+  }
+}
+
+button:hover {
+  border-color: var(--app-color-button-text-hover);
+  background: var(--app-color-button-bg-hover);
+  color: var(--app-color-button-text-hover);
 }
 
 main {
