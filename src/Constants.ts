@@ -1,11 +1,11 @@
 export const Brand: BrandingContainer = {
   Github: {
-    Icon: "/public/icons/github.svg",
+    Icon: "/icons/github.svg",
     Link: "https://github.com/Vicente0670/eshop-anywhere",
     Alt: "Github"
   },
   Shop: {
-    Icon: "/public/favicon.svg",
+    Icon: "/favicon.svg",
     Alt: "Shop"
   }
 }

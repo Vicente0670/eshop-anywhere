@@ -63,7 +63,7 @@
         aspect-ratio: 1;
         height: 1rem;
         content: "";
-        background-image: url("/public/favicon.svg");
+        background-image: url("/favicon.svg");
         background-repeat: no-repeat;
         background-size: contain;
       }
