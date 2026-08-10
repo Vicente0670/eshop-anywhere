@@ -32,9 +32,9 @@
 
   "permissions": [
     "activeTab",
-    "audio",
     "offscreen",
     "storage",
+    "audio",
     "tabs"
   ]
 }

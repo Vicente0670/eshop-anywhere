@@ -10,6 +10,11 @@ export const Brand: BrandingContainer = {
   }
 }
 
+export const Keys: Key = {
+  Alert: "Alert-User",
+  OffscreenURL: "offscreen.html",
+}
+
 interface BrandingContainer { [Platform: string]: Branding }
 
 interface Branding {
@@ -17,3 +22,5 @@ interface Branding {
   Link?: string,
   Alt?: string
 }
+
+interface Key { [Message: string]: string }
