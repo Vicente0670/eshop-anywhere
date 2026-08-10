@@ -13,12 +13,9 @@ export default function App() {
     const [ currentTab ] = await chrome.tabs.query(options);
 
     if (!currentTab?.id) return;
-    // const data = await chrome.runtime.sendMessage(Keys.Alert);
-    // console.log("Received: " + data);
-    console.log("d!!?????!!?????!!?????!!?????");
+    
     const res = await chrome.tabs.sendMessage(currentTab.id, Keys.Alert);
     console.log(res);
-
     isLoading(false);
   }
 
