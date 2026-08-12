@@ -15,7 +15,20 @@ export const Keys: Key = {
   OffscreenURL: "offscreen.html",
 }
 
-interface BrandingContainer { [Platform: string]: Branding }
+export const MusicUrlBase = "https://jetta.vgmtreasurechest.com/soundtracks/nintendo-eshop-original-soundtrack-2011-2017/";
+export const MusicUrl: string[] = [
+  "jcngtauz/23.%20May%202019%20%283DS%20%26%20Wii%20U%29.mp3",
+  "nszuxegq/16.%20July%202014%20%283DS%20%26%20Wii%20U%29.mp3"
+]
+
+export const Websites: string[] = [
+  "amazon.com",
+  "ebay.com"
+]
+
+interface BrandingContainer {
+  [Platform: string]: Branding
+}
 
 interface Branding {
   Icon: string,
@@ -23,4 +36,6 @@ interface Branding {
   Alt?: string
 }
 
-interface Key { [Message: string]: string }
+interface Key {
+  [Message: string]: string
+}

@@ -3,23 +3,21 @@ import { useState } from "react";
 import { Brand, Keys } from "./Constants.ts";
 
 export default function App() {
-
   const [loading, isLoading] = useState<boolean>(false);
+  // to-do: handle loading settings from chrome.storage.sync
+  // to-do: detect page from specified origin in Websites constant
 
   async function toggleMusic() {
     isLoading(true);
 
     const options = { active: true, currentWindow: true }
     const [ currentTab ] = await chrome.tabs.query(options);
-
     if (!currentTab?.id) return;
     
     const res = await chrome.tabs.sendMessage(currentTab.id, Keys.Alert);
     console.log(res);
     isLoading(false);
   }
-
-  console.log("App.tsx : Loaded App.tsx.");
 
   return (
     <>
@@ -32,8 +30,6 @@ export default function App() {
         </div>
 
         <div className="app-settings">
-          {/* bruh
-              i need to clean this up! */}
           <button onClick={toggleMusic}>{loading ? "Loading" : "Click to toggle"}</button>
         </div>
 
