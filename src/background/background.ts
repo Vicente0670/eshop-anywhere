@@ -16,7 +16,7 @@ async function spawnOffscreenDocument(
 
     if (currentScreens.length > 0) {
       console.warn(`The offscreen context "${Keys.OffscreenURL}" already exists!`);
-      return;
+      return true;
     }
 
     if (!documentCreating) {

@@ -1,23 +1,33 @@
 import "./App.css";
-import { useState } from "react";
+import { useEffect, useRef } from "react";
 import { Brand, Keys } from "./Constants.ts";
 
 export default function App() {
-  const [loading, isLoading] = useState<boolean>(false);
+  const loading = useRef<boolean>(false);
   // to-do: handle loading settings from chrome.storage.sync
   // to-do: detect page from specified origin in Websites constant
 
   async function toggleMusic() {
-    isLoading(true);
+    loading.current = true;
 
-    const options = { active: true, currentWindow: true }
-    const [ currentTab ] = await chrome.tabs.query(options);
-    if (!currentTab?.id) return;
+    const querySettings = { active: true, currentWindow: true };
+    const [ currentTab ] = await chrome.tabs.query(querySettings);
+    if (!currentTab?.id)
+      return;
     
-    const res = await chrome.tabs.sendMessage(currentTab.id, Keys.Alert);
-    console.log(res);
-    isLoading(false);
+    const userSettings = await chrome.runtime.sendMessage(Keys.Alert);
+    console.log(userSettings);
+    loading.current = false;
   }
+
+  function test() {
+    if (!loading.current) {
+      console.log("!!!!!!!!!!!!!!!!!!!!!!!\nYOU HAVE BEEN WARNED!!! I'm just kidding.\n\n\n\n\n\n");
+      loading.current = true;
+    }
+  }
+
+  useEffect(test);
 
   return (
     <>
