@@ -10,19 +10,45 @@
   --app-color-button-bg-default: #371505;
   --app-color-button-bg-hover: #4c1d07;
   --app-color-bg-default: #000;
-  --app-color-bg-1: #150d08;
-  --app-color-bg-2: #24160e;
+  --app-color-bg-1-front: #50301e40;
+  --app-color-bg-1-back: #2d1c12;
+  --app-color-bg-2-front: #54321f40;
+  --app-color-bg-2-back: #3e2618;
   --app-color-bg-3: #2d1c12;
+  --app-color-scrollbar-thumb: #ffe1d2;
+  --app-color-scrollbar-track: #7d4a3240;
+
+  --app-gradient-bg-1-front: linear-gradient(
+    var(--app-color-bg-1-front),
+    var(--app-color-bg-1-front) var(--app-scale-bg-1-line-thickness),
+    #00000000 var(--app-scale-bg-1-line-thickness)
+  );
+  --app-gradient-bg-1-back: linear-gradient(
+    var(--app-color-bg-1-back),
+    #0a0a0a
+  );
+  --app-gradient-bg-2-front: linear-gradient(
+    var(--app-color-bg-2-front),
+    var(--app-color-bg-2-front) var(--app-scale-bg-1-line-thickness),
+    #00000000 var(--app-scale-bg-1-line-thickness)
+  );
+  --app-gradient-bg-2-back: linear-gradient(
+    var(--app-color-bg-2-back),
+    #1d120b
+  );
 
   --app-scale-h1: 2rem;
-  --app-scale-h2: 1.75rem;
-  --app-scale-h3: 1.5rem;
+  --app-scale-h2: 1.25rem;
+  --app-scale-h3: 1.125rem;
   --app-scale-p: 1rem;
+  --app-scale-bg-1-line-size: .25rem;
+  --app-scale-bg-1-line-thickness: 50%;
 }
 
 * {
   margin: 0;
   padding: 0;
+  color-scheme: dark;
   scroll-behavior: smooth;
   touch-action: manipulation;
   text-rendering: optimizeLegibility;
@@ -39,11 +65,21 @@ h1, h2, h3, h4, h5, h6, p, a, button {
 }
 
 h2, h3, h4, h5, h6 {
-  color: var(--app-color-font-header-alt);
+  color: var(--app-color-header-alt);
 }
 
 p, a {
   font-size: var(--app-scale-p);
+}
+
+body {
+  background-image:
+    var(--app-gradient-bg-1-front),
+    var(--app-gradient-bg-1-back);
+  background-size:
+    var(--app-scale-bg-1-line-size) var(--app-scale-bg-1-line-size),
+    cover;
+  animation: backgroundScroll 2s linear infinite;
 }
 
 h1 {
@@ -72,18 +108,6 @@ a:hover {
   color: var(--app-color-link-hover)
 }
 
-div {
-  background: var(--app-color-bg-1);
-
-  div {
-    background: var(--app-color-bg-2);
-
-    div {
-      background: var(--app-color-bg-3);
-    }
-  }
-}
-
 button {
   padding: 0 .33rem;
   border: 1px solid var(--app-color-button-text-default);
@@ -107,9 +131,11 @@ main {
   overflow-y: auto;
 }
 
-@media (prefers-color-scheme: dark) {
-  * {
-    color-scheme: dark;
+@keyframes backgroundScroll {
+  0% {
+    background-position: 0 0, 0 0;
+  }
+  100% {
+    background-position: 0 1rem, 0 0;
   }
 }
-/* then, work on chrome.storage.sync thing to store settings and test those out too */

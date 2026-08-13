@@ -1,8 +1,24 @@
 :root {
+  --app-color-main-title-bg: #0a0a0a;
+  --app-color-main-title-border: #242424;
+
   --app-scale-icon-title: 2rem;
-  
+
   --app-footer-height: 4rem;
   --app-scale-icon-footer: 1rem;
+
+  --app-transition-checkbox-filter: filter .125s ease;
+  --app-color-slider-thumb-default: #ffe1d2;
+  --app-color-slider-thumb-hover: #f9efe9;
+  --app-color-slider-thumb-active: #f4b893;
+  --app-color-slider-thumb-shadow-default:
+    inset 0 .125rem .125rem #ffffff40,
+    inset 0 -.125rem .125rem #12121280,
+    0 .125rem .125rem #000;
+  --app-color-slider-thumb-shadow-active:
+    inset 0 .125rem .125rem #ffffff20,
+    inset 0 -.125rem .125rem #00000040,
+    0 .125rem .125rem #000;
 }
 
 .app-main {
@@ -13,9 +29,12 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 1rem 0;
+    padding: .75rem 0;
     text-align: center;
     width: 100%;
+    background: var(--app-color-main-title-bg);
+    outline: 2px solid var(--app-color-main-title-border);
+    filter: drop-shadow(0px 2px 6px #000);
 
     h1 {
       font-weight: normal;
@@ -31,12 +50,199 @@
   }
 
   .app-settings {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 10rem;
-    width: 100%;
-    background: darkgreen;
+    margin: 0 auto;
+    margin-top: .75rem;
+    height: 25rem;
+    width: 95%;
+    border-radius: .5rem;
+    overflow: clip;
+
+    .scrollable {
+      height: 100%;
+      width: 100%;
+      background-image:
+        var(--app-gradient-bg-2-front),
+        var(--app-gradient-bg-2-back);
+      background-size:
+        var(--app-scale-bg-1-line-size) var(--app-scale-bg-1-line-size),
+        cover;
+      border: none;
+      scrollbar-width: thin;
+      scrollbar-color:
+        var(--app-color-scrollbar-thumb) var(--app-color-scrollbar-track);
+      overflow: clip auto;
+
+      .legend {
+        display: flex;
+        align-items: center;
+        height: 10%;
+        width: 100%;
+        background-image:
+          var(--app-gradient-bg-2-front),
+          var(--app-gradient-bg-2-back);
+        background-size:
+          var(--app-scale-bg-1-line-size) var(--app-scale-bg-1-line-size),
+          cover;
+
+        p {
+          margin: 0 .5rem;
+          font-size: var(--app-scale-h2);
+          color: var(--app-color-header-alt);
+        }
+
+      }
+
+      .setting {
+        display: flex;
+        justify-content: right;
+        align-items: center;
+        padding: 2rem .5rem;
+        background-image:
+          var(--app-gradient-bg-2-front),
+          var(--app-gradient-bg-2-back);
+        background-size:
+          var(--app-scale-bg-1-line-size) var(--app-scale-bg-1-line-size),
+          cover;
+
+        .name {
+          margin-right: auto;
+        }
+
+        .label {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          gap: .66rem;
+
+          .status {
+            font-size: .7rem;
+          }
+
+          /*
+           *  Checkbox Section
+           */
+          .checkbox {
+            appearance: none;
+            height: 1.25rem;
+            width: 2.5rem;
+            background-color: #444;
+            border-radius: .625rem;
+            box-shadow:
+              inset 0 .125rem .125rem #ffffff40,
+              inset 0 -.125rem .125rem #12121280;
+            filter: drop-shadow(0 .125rem .125rem #000000aa);
+            transition:
+              background-color .125s ease,
+              var(--app-transition-checkbox-filter);
+          }
+
+          .checkbox:hover {
+            background-color: #515151;
+            transition:
+              background-color 0s ease,
+              var(--app-transition-checkbox-filter);
+          }
+
+          .checkbox:active {
+            box-shadow:
+              inset 0 .125rem .125rem #ffffff20,
+              inset 0 -.125rem .125rem #12121240;
+            transition:
+              background-color 0s ease,
+              var(--app-transition-checkbox-filter);
+          }
+
+          .checkbox:checked {
+            background-color: var(--app-color-accent);
+            filter: drop-shadow(0 0 .125rem #00000080);
+          }
+
+          .checkbox:checked:hover {
+            background-color: var(--app-color-header-alt);
+            transition:
+              background-color 0s ease,
+              var(--app-transition-checkbox-filter);
+          }
+
+          .checkbox:checked:active {
+            box-shadow:
+              inset 0 .125rem .125rem #ffffff20,
+              inset 0 -.125rem .125rem #12121240;
+            transition:
+              background-color 0s ease,
+              var(--app-transition-checkbox-filter);
+          }
+
+          .checkbox::after {
+            position: absolute;
+            margin: .125rem;
+            content: "";
+            height: 1rem;
+            width: 1rem;
+            background: #ddd;
+            border-radius: .5rem;
+            box-shadow:
+              inset 0 .125rem .125rem #fff,
+              inset 0 -.125rem .125rem #12121280;
+            transition: transform .125s cubic-bezier(.2, 1, .67, 1);
+          }
+
+          .checkbox:checked::after {
+            transform: translateX(calc(100% + .25rem));
+          }
+
+          /*
+           *  Slider Section
+           */
+          .slider {
+            appearance: none;
+            height: 2rem;
+            width: 10rem;
+            background: none;
+            border-radius: .5rem;
+          }
+
+          .slider::-webkit-slider-runnable-track {
+            height: 1rem;
+            background-color: var(--app-color-accent);
+            border-radius: .25rem;
+            box-shadow: inset 0 .125rem .25rem #121212aa;
+          } 
+
+          .slider::-webkit-slider-thumb {
+            appearance: none;
+            height: 2rem;
+            width: 1rem;
+            background: var(--app-color-slider-thumb-default);
+            border-radius: .25rem;
+            box-shadow: var(--app-color-slider-thumb-shadow-default);
+            transform: translateY(-25%);
+          }
+
+          .slider::-webkit-slider-thumb:hover {
+            background: var(--app-color-slider-thumb-hover);
+          }
+
+          .slider::-webkit-slider-thumb:active {
+            background: var(--app-color-slider-thumb-active);
+            box-shadow: var(--app-color-slider-thumb-shadow-active);
+            animation: sliderThumbActive .25s ease 1;
+          }
+
+          .slider:focus-visible {
+            outline: 2px solid var(--app-color-accent);
+            outline-offset: .125rem;
+          }
+
+          /* Clean up input styling. */
+          /* Then, implement settings using these inputs and chrome.storage.sync, only to store values for now. */
+
+        }
+
+      }
+
+    }
+
   }
 
   .app-footer {
@@ -45,6 +251,7 @@
     height: var(--app-footer-height);
     width: 100%;
     pointer-events: none;
+    filter: drop-shadow(0px 0px 5px #000);
 
     * {
       pointer-events: all;
@@ -52,19 +259,23 @@
 
     .title {
       display: flex;
+      position: relative;
       justify-content: center;
       align-items: center;
       padding-left: 1rem;
       height: 50%;
       width: max-content;
       background: var(--app-color-bg-3);
+      transform: translateY(100%);
+      z-index: -1;
 
       .name {
         color: var(--app-color-accent);
       }
 
       .name::after {
-        position: absolute; /* Relative until the curve graphic was implemented and added unnecessary padding. */
+        /* Relative until the curve graphic was implemented and added unnecessary padding. */
+        position: absolute;
         display: inline-block;
         margin-top: .2rem;
         margin-left: .5rem;
@@ -98,6 +309,7 @@
         margin-left: .5rem;
         aspect-ratio: 1;
         height: 1.25rem;
+        border-radius: .75rem;
         outline: 0px solid #0000ff00;
         outline-offset: 2px;
         transition: outline-color ease .25s;
@@ -143,9 +355,9 @@
       mask-image: url("#app-footer-curve-path");
       transform: translateX(100%);
     }
-  
+
   }
-  
+
 }
 
 #app-footer-curve-graphic {
@@ -155,6 +367,27 @@
 }
 
 @keyframes socialLinkPulse {
-  0%, 100% { outline-offset: 2px; }
-  50% { outline-offset: 4px; }
+
+  0%,
+  100% {
+    outline-offset: 2px;
+  }
+
+  50% {
+    outline-offset: 4px;
+  }
+}
+
+@keyframes sliderThumbActive {
+  0% {
+    box-shadow:
+      var(--app-color-slider-thumb-shadow-active),
+      0 0 0 .125rem #aaa;
+  }
+
+  100% {
+    box-shadow:
+      var(--app-color-slider-thumb-shadow-active),
+      0 0 .125rem .5rem #aaaaaa00;
+  }
 }
