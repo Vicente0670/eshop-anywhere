@@ -11,7 +11,7 @@ export const Brand: BrandingContainer = {
 }
 
 export const Keys: Key = {
-  Alert: "Alert-User",
+  Start: "start-audio",
   OffscreenURL: "offscreen.html",
 }
 
@@ -22,7 +22,7 @@ export const MusicUrl: string[] = [
 ]
 
 export const Websites: string[] = [
-  "amazon.com",
+  "https://*.amazon.com/*",
   "ebay.com"
 ]
 

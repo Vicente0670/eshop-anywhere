@@ -17,7 +17,7 @@ export default function MusicPlayer() {
 
       child.src = url.current;
       child.autoplay = child.loop = true;
-      child.volume = .05;
+      child.volume = .33;
       child.muted = false;
       child.id = audioTag;
       child.load();

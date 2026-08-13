@@ -23,7 +23,7 @@
     "type": "module"
   },
   "incognito": "split",
-  
+
   "permissions": [
     "activeTab",
     "offscreen",

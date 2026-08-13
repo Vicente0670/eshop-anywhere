@@ -5,7 +5,6 @@ import { Brand, Keys } from "./Constants.ts";
 export default function App() {
   const loading = useRef<boolean>(false);
   // to-do: handle loading settings from chrome.storage.sync
-  // to-do: detect page from specified origin in Websites constant
 
   async function toggleMusic() {
     loading.current = true;
@@ -15,14 +14,13 @@ export default function App() {
     if (!currentTab?.id)
       return;
     
-    const userSettings = await chrome.runtime.sendMessage(Keys.Alert);
+    const userSettings = await chrome.runtime.sendMessage(Keys.Start);
     console.log(userSettings);
     loading.current = false;
   }
 
   function test() {
     if (!loading.current) {
-      console.log("!!!!!!!!!!!!!!!!!!!!!!!\nYOU HAVE BEEN WARNED!!! I'm just kidding.\n\n\n\n\n\n");
       loading.current = true;
     }
   }
