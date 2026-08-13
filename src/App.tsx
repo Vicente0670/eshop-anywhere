@@ -10,10 +10,10 @@ export default function App() {
     loading.current = true;
 
     const querySettings = { active: true, currentWindow: true };
-    const [ currentTab ] = await chrome.tabs.query(querySettings);
+    const [currentTab] = await chrome.tabs.query(querySettings);
     if (!currentTab?.id)
       return;
-    
+
     const userSettings = await chrome.runtime.sendMessage(Keys.Start);
     console.log(userSettings);
     loading.current = false;
@@ -47,13 +47,19 @@ export default function App() {
             <div className="curve-div" />
           </section>
           <section className="socials">
-            <a href={Brand.Github.Link} title={Brand.Github.Link}>
-              <img src={Brand.Github.Icon} alt={Brand.Github.Alt} />
-            </a>
+            {
+              Object.entries(Brand)
+              .filter(brand => brand[1].CanVisit !== false)
+              .map(([Platform, Brand]) => (
+                <a href={Brand.Link} title={Brand.Link} key={Platform}>
+                  <img src={Brand.Icon} alt={Brand.Alt ?? Platform} />
+                </a>
+              ))
+            }
             <div className="curve-div" />
           </section>
         </footer>
-        
+
       </main>
 
       <svg id="app-footer-curve-graphic" height={0} width={0} xmlns="http://www.w3.org/2000/svg">

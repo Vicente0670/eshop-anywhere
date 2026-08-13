@@ -1,10 +1,10 @@
 import { useEffect, useRef } from "react";
-import { MusicUrlBase, MusicUrl } from "../Constants.ts";
+import { IsDev, MusicURLBase, MusicURL } from "../Constants.ts";
 
 export default function MusicPlayer() {
   const container = useRef<HTMLElement>(null);
   const tag = useRef<HTMLAudioElement>(null);
-  const url = useRef<string>(MusicUrlBase + MusicUrl[0]);
+  const url = useRef<string>(MusicURLBase + MusicURL[0].URL);
 
   const audioContainer = "app-audio-container";
   const audioTag = "app-audio-player";
@@ -17,15 +17,18 @@ export default function MusicPlayer() {
 
       child.src = url.current;
       child.autoplay = child.loop = true;
-      child.volume = .33;
+      child.volume = 1/3;
       child.muted = false;
       child.id = audioTag;
       child.load();
 
+      document.title = MusicURL[0].Title;
+
       parent.appendChild(child);
     }
     else {
-      console.warn("Too many audio contexts attempted to play, or there exists an unneeded child node of audioContainer.");
+      if (!IsDev)
+        console.warn("Too many audio contexts attempted to play, or there exists an unneeded child node of audioContainer.");
     }
   }
 
