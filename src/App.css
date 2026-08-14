@@ -8,11 +8,11 @@
     inset 0 -.125rem .125rem #12121280;
   --app-color-checkbox-track-default: #444;
   --app-color-checkbox-track-hover: #515151;
-  --app-color-checkbox-track-hover-highlight: #ec986d;
-  --app-color-checkbox-track-hover-main: #d96f3a;
-  --app-color-checkbox-track-hover-shadow: #994820;
-  --app-color-checkbox-track-hover-highlight-pulse: #e47846;
-  --app-color-checkbox-track-hover-main-pulse: #b24d1b;
+  --app-color-checkbox-track-hover-highlight: #f4a984;
+  --app-color-checkbox-track-hover-main: #ed773c;
+  --app-color-checkbox-track-hover-shadow: #aa562d;
+  --app-color-checkbox-track-hover-highlight-pulse: #e26c35;
+  --app-color-checkbox-track-hover-main-pulse: #bd5927;
   --app-color-checkbox-track-hover-shadow-pulse: #54260f;
   --app-color-checkbox-track-checked-default: var(--app-color-accent);
   --app-color-checkbox-track-checked-hover: #f99868;
