@@ -1,23 +1,63 @@
 import "./App.css";
 import { useEffect, useRef } from "react";
 import { Brand } from "./Constants.ts";
+import { DefaultSettings } from "./Settings.ts";
+import type { SettingsLayout, Settings } from "./Settings.ts";
 
 export default function App() {
   const loading = useRef<boolean>(false);
-  // to-do: handle loading settings from chrome.storage.sync
 
-  // async function toggleMusic() {
-  //   loading.current = true;
+  function setSettings(
+    [Name, Prop]: [
+      keyof Settings,
+      SettingsLayout
+    ]
+  ): React.JSX.Element {
 
-  //   const querySettings = { active: true, currentWindow: true };
-  //   const [currentTab] = await chrome.tabs.query(querySettings);
-  //   if (!currentTab?.id)
-  //     return;
+    if (Prop.Type === "range") {
 
-  //   const userSettings = await chrome.runtime.sendMessage(Keys.Start);
-  //   console.log(userSettings);
-  //   loading.current = false;
-  // }
+      const element = (
+        <div className="setting" key={Name}>
+          <p className="name">{Prop.Name}</p>
+          <label className="label" htmlFor={Prop.Key}>
+
+            <output className="status">0%</output>
+            <input
+              className="slider"
+              type={Prop.Type}
+              min={0}
+              max={100}
+              step={1}
+              list="volumePresets"
+            />
+            <datalist id="volumePresets">
+              <option value="0"></option>
+              <option value="25"></option>
+              <option value="50"></option>
+              <option value="75"></option>
+              <option value="100"></option>
+            </datalist>
+
+          </label>
+        </div>
+      )
+      console.log(element); // tag these elems somehow
+      return element;
+    }
+
+    else {
+      return (
+        <div className="setting" key={Name}>
+          <p className="name">{Prop.Name}</p>
+          <label className="label" htmlFor={Prop.Key}>
+            <p className="status" id={Prop.Key}>OFF</p>
+            <input className={Prop.Type} name={Prop.Key} type="checkbox" />
+          </label>
+        </div>
+      )
+    }
+
+  }
 
   function test() {
     if (!loading.current) {
@@ -39,57 +79,12 @@ export default function App() {
 
         <form className="app-settings">
           <fieldset className="scrollable">
-
             <legend className="legend">
               <p>Settings</p>
             </legend>
-
-            <div className="setting">
-              <p className="name">Volume</p>
-              <label className="label">
-                <output className="status">25%</output>
-                <input
-                  className="slider"
-                  type="range"
-                  min={0}
-                  max={100}
-                  step={1}
-                  list="volumePresets"
-                />
-                <datalist id="volumePresets">
-                  <option value="0"></option>
-                  <option value="25"></option>
-                  <option value="50"></option>
-                  <option value="75"></option>
-                  <option value="100"></option>
-                </datalist>
-              </label>
-            </div>
-
-            <div className="setting">
-              <p className="name">Muted</p>
-              <label className="label" htmlFor="Muted">
-                <p className="status">OFF</p>
-                <input className="checkbox" name="Muted" type="checkbox" />
-              </label>
-            </div>
-
-            <div className="setting">
-              <p className="name">SFX</p>
-              <label className="label" htmlFor="SFX">
-                <p className="status">OFF</p>
-                <input className="checkbox" name="SFX" type="checkbox" />
-              </label>
-            </div>
-
-            <div className="setting">
-              <p className="name">Continuous Play</p>
-              <label className="label" htmlFor="Continuous">
-                <p className="status">OFF</p>
-                <input className="checkbox" name="Continuous" type="checkbox" />
-              </label>
-            </div>
-
+            {
+              Object.entries(DefaultSettings).map(setSettings)
+            }
           </fieldset>
         </form>
 
@@ -106,8 +101,8 @@ export default function App() {
                   <a href={Brand.Link} title={Brand.Link} key={Platform}>
                     <img src={Brand.Icon} alt={Brand.Alt ?? Platform} />
                   </a>
-                )
-                )
+                ) 
+              )
             }
             <div className="curve-div" />
           </section>

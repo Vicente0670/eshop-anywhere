@@ -270,9 +270,7 @@
             outline: 2px solid var(--app-color-slider-track);
             outline-offset: .25rem;
           }
-
-          /* Then, implement settings using these inputs and chrome.storage.sync, only to store values for now. */
-
+          
         }
 
       }
