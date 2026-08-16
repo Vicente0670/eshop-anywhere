@@ -55,8 +55,8 @@
 }
 
 html, body {
-  height: 33rem;
-  width: 22rem;
+  height: max(33rem, 100%);
+  width: max(22rem, 100%);
   background: var(--app-color-bg-default);
 }
 

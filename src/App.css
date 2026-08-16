@@ -17,7 +17,6 @@
   --app-color-checkbox-track-checked-default: var(--app-color-accent);
   --app-color-checkbox-track-checked-hover: #f99868;
 
-  /* todo: fix whatever i made here */
   --app-color-checkbox-track-shadow-default:
     inset 0 .125rem .125rem #ffffff40,
     inset 0 -.125rem .125rem #12121280,
@@ -92,7 +91,7 @@
   .app-settings {
     margin: 0 auto;
     margin-top: .75rem;
-    height: 25rem;
+    height: 80%;
     width: 95%;
     border-radius: .5rem;
     overflow: clip;
@@ -146,6 +145,7 @@
 
         .name {
           margin-right: auto;
+          width: min(10rem, 100%);
         }
 
         .label {
@@ -156,6 +156,7 @@
 
           .status {
             font-size: .7rem;
+            color: var(--app-color-paragraph);
           }
 
           /*
