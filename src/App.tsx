@@ -1,71 +1,141 @@
 import "./App.css";
 import { useEffect, useRef } from "react";
-import { Brand } from "./Constants.ts";
-import { DefaultSettings } from "./Settings.ts";
-import type { SettingsLayout, Settings } from "./Settings.ts";
+import { Brand, type Message } from "./Constants.ts";
+import { Settings, type SettingsLayout, type Setting, returnSettingType } from "./Settings.ts";
 
 export default function App() {
-  const loading = useRef<boolean>(false);
+  const settingsRefs = useRef<HTMLLabelElement[]>([]);
+  const settingsEntries = Object.entries(Settings).filter((Prop) => !Prop[1].IsQuery);
 
-  function setSettings(
+  async function inputUpdate(ev: Event) {
+    const target = ev.target as HTMLInputElement;
+    const output = target.parentElement!.querySelector(`#${target.id}`)!;
+    let value: boolean | number | string;
+
+    if (target.type === "range") {
+      value = Number.parseInt(target.value) || 0;
+      output.textContent = `${value}%`;
+    }
+    else {
+      value = target.checked;
+      output.textContent = value ? "ON" : "OFF";
+    }
+    
+    const msg: Message = {
+      Type: target.id,
+      Value: value,
+      EventCaller: ev.type
+    }
+
+    await chrome.runtime.sendMessage(msg);
+  }
+
+  async function applyUserSettings() {
+    const settings: Setting = await chrome.storage.sync.get(null);
+
+    settingsRefs.current.forEach(async (element: HTMLLabelElement) => {
+      const inputElem = element.querySelector(`input#${element.htmlFor}`);
+      const isInputElement = inputElem instanceof HTMLInputElement;
+
+      if (isInputElement && settings) {
+
+        if (
+          inputElem.type === "range" &&
+          inputElem.id == Settings.Volume.Key &&
+          settings.Volume.Value !== undefined
+        ) {
+          const value = settings.Volume.Value.toString();
+          inputElem.value = value;
+          
+          const outputElem = element.querySelector(`output#${element.htmlFor}`);
+          if (outputElem instanceof HTMLOutputElement)
+            outputElem.textContent = `${value}%`;
+        }
+
+        if (inputElem.type === "checkbox") {
+          const value = returnSettingType(inputElem.id, settings);
+          inputElem.checked = value;
+
+          const outputElem = element.querySelector(`p#${element.htmlFor}`);
+          if (outputElem instanceof HTMLParagraphElement)
+            outputElem.textContent = value ? "ON" : "OFF";
+        }
+
+      }
+
+    });
+    
+  }
+
+  function auditSettingsRef(element: HTMLLabelElement) {
+
+    if (settingsRefs.current.length < settingsEntries.length) {
+
+      const inputElem = element.querySelector(`input#${element.htmlFor}`);
+      const isInputElement = inputElem instanceof HTMLInputElement;
+
+      if (isInputElement) {
+
+        if (inputElem.type === "range") {
+          inputElem.addEventListener("change", inputUpdate);
+          inputElem.addEventListener("input", inputUpdate);
+        }
+        else {
+          inputElem.addEventListener("change", inputUpdate);
+        }
+
+        settingsRefs.current.push(element);
+      }
+    }
+  }
+
+  function injectSettings(
     [Name, Prop]: [
-      keyof Settings,
+      keyof Setting,
       SettingsLayout
     ]
   ): React.JSX.Element {
 
     if (Prop.Type === "range") {
-
-      const element = (
+      return (
         <div className="setting" key={Name}>
           <p className="name">{Prop.Name}</p>
-          <label className="label" htmlFor={Prop.Key}>
-
-            <output className="status">0%</output>
+          <label className="label" htmlFor={Prop.Key} ref={auditSettingsRef}>
+            <output className="status" id={Prop.Key}>50%</output>
             <input
               className="slider"
+              id={Prop.Key}
               type={Prop.Type}
               min={0}
               max={100}
               step={1}
-              list="volumePresets"
+              list="presets"
             />
-            <datalist id="volumePresets">
-              <option value="0"></option>
-              <option value="25"></option>
-              <option value="50"></option>
-              <option value="75"></option>
-              <option value="100"></option>
-            </datalist>
-
           </label>
+          <datalist id="presets">
+            <option value="25"></option>
+            <option value="50"></option>
+            <option value="75"></option>
+          </datalist>
         </div>
       )
-      console.log(element); // tag these elems somehow
-      return element;
     }
-
     else {
       return (
         <div className="setting" key={Name}>
           <p className="name">{Prop.Name}</p>
-          <label className="label" htmlFor={Prop.Key}>
+          <label className="label" htmlFor={Prop.Key} ref={auditSettingsRef}>
             <p className="status" id={Prop.Key}>OFF</p>
-            <input className={Prop.Type} name={Prop.Key} type="checkbox" />
+            <input className={Prop.Type} id={Prop.Key} name={Prop.Key} type="checkbox" />
           </label>
         </div>
       )
     }
-
   }
 
-  function test() {
-    if (!loading.current) {
-      loading.current = true;
-    }
-  }
-
-  useEffect(test);
+  useEffect(() => {
+    applyUserSettings();
+  });
 
   return (
     <>
@@ -83,7 +153,7 @@ export default function App() {
               <p>Settings</p>
             </legend>
             {
-              Object.entries(DefaultSettings).map(setSettings)
+              settingsEntries.map(injectSettings)
             }
           </fieldset>
         </form>

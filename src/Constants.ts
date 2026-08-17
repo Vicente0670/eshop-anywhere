@@ -27,20 +27,76 @@ export const Keys: Key = {
 export const MusicURLBase = "https://jetta.vgmtreasurechest.com/soundtracks/nintendo-eshop-original-soundtrack-2011-2017/";
 export const MusicURL: MusicContainer[] = [
   {
-    Title: "something",
-    URL: "nszuxegq/16.%20July%202014%20%283DS%20%26%20Wii%20U%29.mp3"
+    Title: "June 2011 (3DS)",
+    Console: ["3ds"],
+    URL: "ewujnkop/08.%20June%202011%20%283DS%29.mp3",
   },
   {
-    Title: "something2",
-    URL: "jcngtauz/23.%20May%202019%20%283DS%20%26%20Wii%20U%29.mp3"
+    Title: "November 2012 (Wii U)",
+    Console: ["wiiu"],
+    URL: "sqaewuhc/11.%20November%202012%20%28Wii%20U%29.mp3",
   },
-]
-
-export const UserOptionsDefault: UserOptions = {
-  Continuous: true,
-  Effects: true,
-  Volume: 1/3,
-}
+  {
+    Title: "September 2013 (Wii U)",
+    Console: ["wiiu"],
+    URL: "psusgecz/12.%20September%202013%20%28Wii%20U%29.mp3",
+  },
+  {
+    Title: "December 2013 (Wii U)",
+    Console: ["wiiu"],
+    URL: "oyywmupm/13.%20December%202013%20%28Wii%20U%29.mp3",
+  },
+  {
+    Title: "January 2014 (Wii U)",
+    Console: ["wiiu"],
+    URL: "tgybjtqy/14.%20January%202014%20%28Wii%20U%29.mp3",
+  },
+  {
+    Title: "April 2014 (Wii U)",
+    Console: ["wiiu"],
+    URL: "vgvkmdji/15.%20April%202014%20%28Wii%20U%29.mp3",
+  },
+  {
+    Title: "July 2014 (3DS & Wii U)",
+    Console: ["3ds", "wiiu"],
+    URL: "nszuxegq/16.%20July%202014%20%283DS%20%26%20Wii%20U%29.mp3",
+  },
+  {
+    Title: "January 2015 (3DS & Wii U)",
+    Console: ["3ds", "wiiu"],
+    URL: "kcijuury/17.%20January%202015%20%283DS%20%26%20Wii%20U%29.mp3",
+  },
+  {
+    Title: "June 2015 (3DS & Wii U)",
+    Console: ["3ds", "wiiu"],
+    URL: "rqdvqsrf/18.%20June%202015%20%283DS%20%26%20Wii%20U%29.mp3",
+  },
+  {
+    Title: "September 2015 (3DS & Wii U)",
+    Console: ["3ds", "wiiu"],
+    URL: "dyiuxgnw/19.%20September%202015%20%283DS%20%26%20Wii%20U%29.mp3",
+  },
+  {
+    Title: "December 2015 (3DS & Wii U)",
+    Console: ["3ds", "wiiu"],
+    URL: "tdmxffnx/20.%20December%202015%20%283DS%20%26%20Wii%20U%29.mp3",
+  },
+  {
+    Title: "January 2016 (3DS & Wii U)",
+    Console: ["3ds", "wiiu"],
+    URL: "xxueoiwk/21.%20January%202016%20%283DS%20%26%20Wii%20U%29.mp3",
+  },
+  {
+    Title: "May 2016 (3DS & Wii U)",
+    Console: ["3ds", "wiiu"],
+    URL: "imlsikaw/22.%20May%202016%20%283DS%20%26%20Wii%20U%29.mp3",
+  },
+  {
+    Title: "May 2019 (3DS & Wii U)",
+    Console: ["3ds", "wiiu"],
+    URL: "jcngtauz/23.%20May%202019%20%283DS%20%26%20Wii%20U%29.mp3",
+  }
+];
 
 export const Websites: string[] = [
   "https://*.amazon.ae/*", // United Arab Emirates
@@ -66,6 +122,12 @@ export const Websites: string[] = [
   "https://*.amazon.sa/*", // Saudi Arabia
   "https://*.amazon.sg/*", // Singapore
 ]
+
+export interface Message {
+  Type: string,
+  Value: boolean | number | string,
+  EventCaller?: string,
+}
 
 export interface UserOptions {
   Continuous?: boolean,
@@ -95,5 +157,21 @@ interface Key {
 
 interface MusicContainer {
   Title: string,
+  Console: ConsoleTypes[],
   URL: string
+}
+
+type ConsoleTypes = "3ds" | "dsi" | "wii" | "wiiu";
+
+export function compareArrays<T>(x: T[], y: typeof x): boolean {
+  if (x.length !== y.length)
+    return false;
+
+  const z = new Set(y);
+  x.forEach((e) => {
+    if (!z.has(e))
+      return false;
+  })
+
+  return true;
 }
