@@ -134,6 +134,8 @@ export default function App() {
   }
 
   useEffect(() => {
+    const msg: chrome.runtime.ConnectInfo = { name: "new-channel" };
+    chrome.runtime.connect(msg);
     applyUserSettings();
   });
 

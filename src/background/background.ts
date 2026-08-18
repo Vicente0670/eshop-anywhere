@@ -84,6 +84,16 @@ async function auditTabChange() {
   return true;
 }
 
+async function receiveConnection(message: chrome.runtime.Port) {
+  if (message.name == "new-channel") {
+
+    message.onDisconnect.addListener((e) => {
+      console.log(e);
+      
+    });
+  }
+}
+
 async function querySettings(
   message: Message,
   sender: chrome.runtime.MessageSender,
@@ -160,4 +170,5 @@ chrome.tabs.onActivated.addListener(auditTabChange);
 chrome.runtime.onStartup.addListener(auditTabChange);
 chrome.runtime.onInstalled.addListener(auditTabChange);
 
+chrome.runtime.onConnect.addListener(receiveConnection);
 chrome.runtime.onMessage.addListener(querySettings);
