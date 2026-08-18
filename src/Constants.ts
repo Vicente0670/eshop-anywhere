@@ -1,3 +1,5 @@
+import type { Setting } from "./Settings";
+
 // Shows more logs than is supposed to if true
 export const IsDev = false;
 
@@ -20,8 +22,11 @@ export const Brand: BrandingContainer = {
 }
 
 export const Keys: Key = {
-  Start: "start-audio",
   OffscreenURL: "offscreen.html"
+}
+
+interface Key {
+  [Message: string]: string
 }
 
 export const MusicURLBase = "https://jetta.vgmtreasurechest.com/soundtracks/nintendo-eshop-original-soundtrack-2011-2017/";
@@ -121,23 +126,20 @@ export const Websites: string[] = [
   "https://*.amazon.pl/*", // Poland
   "https://*.amazon.sa/*", // Saudi Arabia
   "https://*.amazon.sg/*", // Singapore
-]
+];
+
+export const WishlistPaths: string[] = [
+
+];
+
+export const SettingsPaths: string[] = [
+
+];
 
 export interface Message {
   Type: string,
-  Value: boolean | number | string,
-  EventCaller?: string,
-}
-
-export interface UserOptions {
-  Continuous?: boolean,
-  Effects?: boolean,
-  MusicBlacklist?: string[],
-  MusicWhitelist?: string[],
-  Muted?: boolean;
-  SiteBlacklist?: string[],
-  SiteWhitelist?: string[],
-  Volume?: number,
+  Value?: Setting,
+  Event?: string,
 }
 
 interface BrandingContainer {
@@ -149,10 +151,6 @@ interface Branding {
   CanVisit?: boolean
   Icon: string,
   Link?: string,
-}
-
-interface Key {
-  [Message: string]: string
 }
 
 interface MusicContainer {

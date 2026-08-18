@@ -1,5 +1,5 @@
 import { IsDev, Keys, Websites, type Message } from "../Constants.ts";
-import { Settings, type Setting, type SettingsLayout } from "../Settings.ts";
+import { SettingQuery, Settings, type Setting } from "../Settings.ts";
 
 const tabQueryOptions: chrome.tabs.QueryInfo = {
   windowType: "normal",
@@ -8,12 +8,12 @@ const tabQueryOptions: chrome.tabs.QueryInfo = {
 }
 
 function delimiter(str: string): string {
-  return str + " - ";
+  return str + "() - ";
 }
 
 let creatingDocument: null | void;
 async function spawnDocument(tabs: chrome.tabs.Tab[]) {
-  const functionName = delimiter("spawnDocument()");
+  const functionName = delimiter(spawnDocument.name);
   // Only one context will ever be needed of Keys.OffscreenURL
   const contextOptions: chrome.runtime.ContextFilter = {
     contextTypes: ["OFFSCREEN_DOCUMENT"]
@@ -59,7 +59,7 @@ async function auditTabUpdate(
   changeInfo: chrome.tabs.OnUpdatedInfo,
   tab: chrome.tabs.Tab
 ) {
-  const functionName = delimiter("auditTabUpdate()");
+  const functionName = delimiter(auditTabUpdate.name);
   if (IsDev) {
     console.log(`${functionName}tabId: ${tabId}`);
     console.log(`${functionName}changeInfo: ${changeInfo}`);
@@ -84,82 +84,29 @@ async function auditTabChange() {
   return true;
 }
 
-async function receiveConnection(message: chrome.runtime.Port) {
-  if (message.name == "new-channel") {
-
-    message.onDisconnect.addListener((e) => {
-      console.log(e);
-      
-    });
-  }
-}
-
 async function querySettings(
   message: Message,
   sender: chrome.runtime.MessageSender,
   sendResponse: (response: Setting) => void
 ) {
-  const functionName = delimiter("querySettings");
+  const functionName = delimiter(querySettings.name);
 
-  if (message.Type === Settings.Query.Key) {
+  if (IsDev) {
+    console.group();
+    console.info(`${functionName}Settings have been queried.`);
+    console.info(sender);
+    console.groupEnd();
+  }
+
+  if (message.Type === SettingQuery) {
+
+    if (message.Value) {
+      return await chrome.storage.sync.set(message.Value);
+    }
+
     const storage: Setting = await chrome.storage.sync.get(null);
     sendResponse(storage);
     return true;
-  }
-
-  if (message.EventCaller === "change") {
-    
-    if (IsDev)
-      console.info(`${functionName}A setting has changed with ID "${message.Type}".`);
-
-    switch (message.Type) {
-
-      case Settings.Volume.Key: {
-        const Volume: SettingsLayout = {
-          Name: Settings.Volume.Name,
-          Key: message.Type,
-          Type: "range",
-          Value: message.Value
-        }
-        return await chrome.storage.sync.set({ Volume });
-      }
-
-      case Settings.Muted.Key: {
-        const Muted: SettingsLayout = {
-          Name: Settings.Muted.Name,
-          Key: message.Type,
-          Type: "checkbox",
-          Value: message.Value
-        }
-        return await chrome.storage.sync.set({ Muted });
-      }
-
-      case Settings.Effects.Key: {
-        const Effects: SettingsLayout = {
-          Name: Settings.Effects.Name,
-          Key: message.Type,
-          Type: "checkbox",
-          Value: message.Value
-        }
-        return await chrome.storage.sync.set({ Effects });
-      }
-
-      case Settings.Continuous.Key: {
-        const Continuous: SettingsLayout = {
-          Name: Settings.Continuous.Name,
-          Key: message.Type,
-          Type: "checkbox",
-          Value: message.Value
-        }
-        return await chrome.storage.sync.set({ Continuous });
-      }
-
-    }
-
-  }
-
-  if (IsDev) {
-    console.log(sender);
   }
 
   return true;
@@ -170,5 +117,4 @@ chrome.tabs.onActivated.addListener(auditTabChange);
 chrome.runtime.onStartup.addListener(auditTabChange);
 chrome.runtime.onInstalled.addListener(auditTabChange);
 
-chrome.runtime.onConnect.addListener(receiveConnection);
 chrome.runtime.onMessage.addListener(querySettings);

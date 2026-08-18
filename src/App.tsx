@@ -1,15 +1,18 @@
 import "./App.css";
 import { useEffect, useRef } from "react";
-import { Brand, type Message } from "./Constants.ts";
-import { Settings, type SettingsLayout, type Setting, returnSettingType } from "./Settings.ts";
+import { Brand, IsDev, type Message } from "./Constants.ts";
+import { Settings, type SettingsLayout, type Setting, SettingQuery } from "./Settings.ts";
 
 export default function App() {
   const settingsRefs = useRef<HTMLLabelElement[]>([]);
-  const settingsEntries = Object.entries(Settings).filter((Prop) => !Prop[1].IsQuery);
+  const currentSettings = useRef<Setting>(Settings);
+  const newSettings = useRef<Setting>(Object());
+  const settingsEntries = Object.entries(Settings);
 
   async function inputUpdate(ev: Event) {
     const target = ev.target as HTMLInputElement;
-    const output = target.parentElement!.querySelector(`#${target.id}`)!;
+    const parent = target.parentElement as HTMLLabelElement;
+    const output = parent.querySelector(`#${target.name}`) as HTMLElement;
     let value: boolean | number | string;
 
     if (target.type === "range") {
@@ -20,78 +23,66 @@ export default function App() {
       value = target.checked;
       output.textContent = value ? "ON" : "OFF";
     }
-    
-    const msg: Message = {
-      Type: target.id,
-      Value: value,
-      EventCaller: ev.type
-    }
 
-    await chrome.runtime.sendMessage(msg);
+    const setting = Object.values(Settings).find(e => e.Key === target.id);
+    if (!setting)
+      return;
+
+    const settingName = target.name as keyof Setting;
+    setting.Value = value;
+    newSettings.current[settingName] = setting;
   }
 
   async function applyUserSettings() {
     const settings: Setting = await chrome.storage.sync.get(null);
+    currentSettings.current = settings;
 
-    settingsRefs.current.forEach(async (element: HTMLLabelElement) => {
-      const inputElem = element.querySelector(`input#${element.htmlFor}`);
-      const isInputElement = inputElem instanceof HTMLInputElement;
+    if (Object.keys(newSettings.current).length != 0)
+      return;
 
-      if (isInputElement && settings) {
+    settingsRefs.current.forEach((element: HTMLLabelElement) => {
+      if (!settings)
+        return;
 
-        if (
-          inputElem.type === "range" &&
-          inputElem.id == Settings.Volume.Key &&
-          settings.Volume.Value !== undefined
-        ) {
-          const value = settings.Volume.Value.toString();
-          inputElem.value = value;
-          
-          const outputElem = element.querySelector(`output#${element.htmlFor}`);
-          if (outputElem instanceof HTMLOutputElement)
-            outputElem.textContent = `${value}%`;
-        }
+      const input = element.querySelector(`input#${element.htmlFor}`) as HTMLInputElement;
+      const output = element.querySelector(`#${input.name}`) as HTMLElement;
+      const settingName = input.name as keyof Setting;
+      const value = settings[settingName].Value;
 
-        if (inputElem.type === "checkbox") {
-          const value = returnSettingType(inputElem.id, settings);
-          inputElem.checked = value;
-
-          const outputElem = element.querySelector(`p#${element.htmlFor}`);
-          if (outputElem instanceof HTMLParagraphElement)
-            outputElem.textContent = value ? "ON" : "OFF";
-        }
-
+      if (input.type === "range") {
+        input.value = value.toString() ?? "0";
+        output.textContent = `${value}%`;
+      }
+      if (input.type === "checkbox") {
+        input.checked = value as boolean;
+        output.textContent = value ? "ON" : "OFF";
       }
 
     });
-    
+
   }
 
   function auditSettingsRef(element: HTMLLabelElement) {
 
     if (settingsRefs.current.length < settingsEntries.length) {
 
-      const inputElem = element.querySelector(`input#${element.htmlFor}`);
-      const isInputElement = inputElem instanceof HTMLInputElement;
+      const inputElem = element.querySelector(`input#${element.htmlFor}`) as HTMLInputElement;
 
-      if (isInputElement) {
-
-        if (inputElem.type === "range") {
-          inputElem.addEventListener("change", inputUpdate);
-          inputElem.addEventListener("input", inputUpdate);
-        }
-        else {
-          inputElem.addEventListener("change", inputUpdate);
-        }
-
-        settingsRefs.current.push(element);
+      if (inputElem.type === "range") {
+        inputElem.addEventListener("change", inputUpdate);
+        inputElem.addEventListener("input", inputUpdate);
       }
+      else {
+        inputElem.addEventListener("change", inputUpdate);
+      }
+
+      settingsRefs.current.push(element);
     }
   }
 
   function injectSettings(
     [Name, Prop]: [
-      keyof Setting,
+      string,
       SettingsLayout
     ]
   ): React.JSX.Element {
@@ -101,15 +92,16 @@ export default function App() {
         <div className="setting" key={Name}>
           <p className="name">{Prop.Name}</p>
           <label className="label" htmlFor={Prop.Key} ref={auditSettingsRef}>
-            <output className="status" id={Prop.Key}>50%</output>
+            <output className="status" id={Name}>50%</output>
             <input
-              className="slider"
+              className={`slider`}
               id={Prop.Key}
               type={Prop.Type}
               min={0}
               max={100}
               step={1}
               list="presets"
+              name={Name}
             />
           </label>
           <datalist id="presets">
@@ -125,8 +117,8 @@ export default function App() {
         <div className="setting" key={Name}>
           <p className="name">{Prop.Name}</p>
           <label className="label" htmlFor={Prop.Key} ref={auditSettingsRef}>
-            <p className="status" id={Prop.Key}>OFF</p>
-            <input className={Prop.Type} id={Prop.Key} name={Prop.Key} type="checkbox" />
+            <p className="status" id={Name}>OFF</p>
+            <input className={`${Prop.Type}`} id={Prop.Key} name={Name} type="checkbox" />
           </label>
         </div>
       )
@@ -134,9 +126,38 @@ export default function App() {
   }
 
   useEffect(() => {
-    const msg: chrome.runtime.ConnectInfo = { name: "new-channel" };
-    chrome.runtime.connect(msg);
     applyUserSettings();
+
+    function popupClose(ev: Event) {
+      const entries = Object.entries(newSettings.current);
+
+      if (entries.length) {
+
+        entries.forEach(([Name, Prop]) => {
+          const settingName = Name as keyof Setting;
+          currentSettings.current[settingName].Value = Prop.Value;
+        });
+
+        const data: Message = {
+          Type: SettingQuery,
+          Value: currentSettings.current,
+        }
+        if (document.visibilityState === "hidden")
+          chrome.runtime.sendMessage(data);
+      }
+      if (IsDev) {
+        console.group();
+        console.info("Visibility of App.tsx has been mutated. Event message is displayed below.");
+        console.info(ev);
+        console.groupEnd();
+      }
+    }
+
+    document.addEventListener("visibilitychange", popupClose);
+
+    return () => {
+      document.removeEventListener("visibilitychange", popupClose);
+    }
   });
 
   return (
@@ -173,8 +194,8 @@ export default function App() {
                   <a href={Brand.Link} title={Brand.Link} key={Platform}>
                     <img src={Brand.Icon} alt={Brand.Alt ?? Platform} />
                   </a>
-                ) 
-              )
+                )
+                )
             }
             <div className="curve-div" />
           </section>

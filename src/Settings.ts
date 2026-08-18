@@ -23,40 +23,32 @@ export const Settings: Setting = {
     Key: "settings-continuous",
     Type: "checkbox",
     Value: false
-  },
-  Query: {
-    Name: "Query Settings",
-    Key: "settings-query",
-    IsQuery: true
   }
-}
-
-export interface Setting {
-  [Setting: string]: SettingsLayout;
-}
-
-export interface SettingsLayout {
-  Name: string,
-  Key: string,
-  Type?: "checkbox" | "range",
-  Value?: boolean | string | number,
-  IsQuery?: boolean,
 }
 
 export const SettingNames: string[] = Object.keys(Settings);
 
-export function returnSettingType(id: string, settings: Setting): boolean {
-  switch (id) {
-    case settings.Muted.Key:
-      return settings.Muted.Value as boolean || Settings.Muted.Value as boolean;
+export const SettingQuery: string = "settings-query";
 
-    case settings.Effects.Key:
-      return settings.Effects.Value as boolean || Settings.Effects.Value as boolean;
-
-    case settings.Continuous.Key:
-      return settings.Continuous.Value as boolean || Settings.Continuous.Value as boolean;
-
-    default:
-      return false;
-  }
+export interface SettingsLayout {
+  Name: string,
+  Key: SettingKeys,
+  Type: "checkbox" | "range",
+  Value: boolean | string | number
 }
+
+export type Setting = {
+  [Setting in SettingIds]: SettingsLayout;
+};;
+
+export type SettingIds =
+  "Volume" |
+  "Muted" |
+  "Effects" |
+  "Continuous";
+
+export type SettingKeys =
+  "settings-volume" |
+  "settings-muted" |
+  "settings-sfx" |
+  "settings-continuous";

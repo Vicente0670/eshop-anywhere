@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { compareArrays, MusicURLBase, MusicURL, type Message, IsDev } from "../Constants.ts";
-import { SettingNames, Settings, type Setting } from "../Settings.ts";
+import { SettingNames, SettingQuery, Settings, type Setting } from "../Settings.ts";
 
 export default function MusicPlayer() {
   const [loaded, isLoaded] = useState(false);
@@ -100,14 +100,14 @@ export default function MusicPlayer() {
       if (
         message.Type === Settings.Volume.Key &&
         typeof message.Value === "number" &&
-        message.EventCaller === "set"
+        message.Event === "set"
       ) {
         updateVolume(message.Value)
       }
       if (
         message.Type === Settings.Volume.Key &&
         typeof message.Value === "number" &&
-        (message.EventCaller === "change" || message.EventCaller === "input")
+        (message.Event === "change" || message.Event === "input")
       ) {
         updateVolume(message.Value);
       }
@@ -115,7 +115,7 @@ export default function MusicPlayer() {
       if (
         message.Type === Settings.Muted.Key &&
         typeof message.Value === "boolean" &&
-        message.EventCaller === "change"
+        message.Event === "change"
       ) {
         updateMute(message.Value);
       }
@@ -126,10 +126,7 @@ export default function MusicPlayer() {
     }
 
     async function initialize() {
-      const msg: Message = {
-        Type: Settings.Query.Key,
-        Value: 0
-      }
+      const msg: Message = { Type: SettingQuery }
       const settings: Setting = await chrome.runtime.sendMessage(msg);
       
       if (
