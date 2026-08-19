@@ -31,6 +31,13 @@ export default function App() {
     const settingName = target.name as keyof Setting;
     setting.Value = value;
     newSettings.current[settingName] = setting;
+
+    const msg: Message = {
+      Type: newSettings.current[settingName].Key,
+      Value: value,
+      Event: ev.type,
+    }
+    await chrome.runtime.sendMessage(msg);
   }
 
   async function applyUserSettings() {

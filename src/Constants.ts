@@ -129,7 +129,7 @@ export const Websites: string[] = [
 ];
 
 export const WishlistPaths: string[] = [
-
+  "/gc/"
 ];
 
 export const SettingsPaths: string[] = [
@@ -138,7 +138,7 @@ export const SettingsPaths: string[] = [
 
 export interface Message {
   Type: string,
-  Value?: Setting,
+  Value?: Setting | number | boolean,
   Event?: string,
 }
 
@@ -161,10 +161,15 @@ interface MusicContainer {
 
 type ConsoleTypes = "3ds" | "dsi" | "wii" | "wiiu";
 
-export function compareArrays<T>(x: T[], y: typeof x): boolean {
-  if (x.length !== y.length)
-    return false;
-
+/**
+ * Returns true if all the elements of array x are inside of array y.
+ * Useful for checking subsets, but does not ensure absolute equivalence.
+ * 
+ * @param x First array
+ * @param y Second array
+ * @returns True if all elements of x are in y
+ */
+export function hasElements<T>(x: T[], y: typeof x): boolean {
   const z = new Set(y);
   x.forEach((e) => {
     if (!z.has(e))

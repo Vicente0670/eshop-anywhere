@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { compareArrays, MusicURLBase, MusicURL, type Message, IsDev } from "../Constants.ts";
+import { MusicURLBase, MusicURL, type Message, IsDev, hasElements } from "../Constants.ts";
 import { SettingNames, SettingQuery, Settings, type Setting } from "../Settings.ts";
 
 export default function MusicPlayer() {
@@ -99,25 +99,13 @@ export default function MusicPlayer() {
     ) {
       if (
         message.Type === Settings.Volume.Key &&
-        typeof message.Value === "number" &&
-        message.Event === "set"
-      ) {
-        updateVolume(message.Value)
-      }
-      if (
-        message.Type === Settings.Volume.Key &&
-        typeof message.Value === "number" &&
         (message.Event === "change" || message.Event === "input")
       ) {
-        updateVolume(message.Value);
+        updateVolume(message.Value as number);
       }
 
-      if (
-        message.Type === Settings.Muted.Key &&
-        typeof message.Value === "boolean" &&
-        message.Event === "change"
-      ) {
-        updateMute(message.Value);
+      if (message.Type === Settings.Muted.Key && message.Event === "change") {
+        updateMute(message.Value as boolean);
       }
       if (IsDev) {
         console.log(sender);
@@ -128,11 +116,11 @@ export default function MusicPlayer() {
     async function initialize() {
       const msg: Message = { Type: SettingQuery }
       const settings: Setting = await chrome.runtime.sendMessage(msg);
-      
+
       if (
         navigator.mediaSession &&
         tag.current instanceof HTMLAudioElement &&
-        compareArrays(Object.keys(settings), SettingNames)
+        hasElements(SettingNames, Object.keys(settings))
       ) {
         const volume = Number.parseInt(settings.Volume.Value as string) || Settings.Volume.Value as number;
         tag.current.src = url.current;

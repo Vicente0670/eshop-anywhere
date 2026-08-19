@@ -101,7 +101,7 @@ async function querySettings(
   if (message.Type === SettingQuery) {
 
     if (message.Value) {
-      return await chrome.storage.sync.set(message.Value);
+      return await chrome.storage.sync.set(message.Value as Setting);
     }
 
     const storage: Setting = await chrome.storage.sync.get(null);
