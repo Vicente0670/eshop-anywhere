@@ -142,6 +142,15 @@ export interface Message {
   Event?: string,
 }
 
+export interface MediaMessage {
+  Type: MediaRequests,
+}
+
+type MediaRequests =
+  "play" |
+  "pause" |
+  "...";
+
 interface BrandingContainer {
   [Platform: string]: Branding
 }
@@ -171,10 +180,17 @@ type ConsoleTypes = "3ds" | "dsi" | "wii" | "wiiu";
  */
 export function hasElements<T>(x: T[], y: typeof x): boolean {
   const z = new Set(y);
-  x.forEach((e) => {
-    if (!z.has(e))
-      return false;
-  })
+  return x.every(e => z.has(e));
+}
 
-  return true;
+/**
+ * Returns true if every element in array x is in array y, and every element in array y is in array x.
+ * Useful for checking array equivalence.
+ * 
+ * @param x First array
+ * @param y Second array
+ * @returns True if x = y
+ */
+export function isArrayEqual<T>(x: T[], y: typeof x) {
+  return x.length === y.length ? (hasElements(x, y) && hasElements(y, x)) : false;
 }

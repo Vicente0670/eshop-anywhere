@@ -1,7 +1,7 @@
 import "./App.css";
 import { useEffect, useRef } from "react";
 import { Brand, IsDev, type Message } from "./Constants.ts";
-import { Settings, type SettingsLayout, type Setting, SettingQuery } from "./Settings.ts";
+import { Settings, type SettingsLayout, type Setting, SettingQuery, verifySettings } from "./Settings.ts";
 
 export default function App() {
   const settingsRefs = useRef<HTMLLabelElement[]>([]);
@@ -41,20 +41,21 @@ export default function App() {
   }
 
   async function applyUserSettings() {
-    const settings: Setting = await chrome.storage.sync.get(null);
+    const settings: Setting = verifySettings(await chrome.storage.sync.get(null));
     currentSettings.current = settings;
 
-    if (Object.keys(newSettings.current).length != 0)
+    if (Object.keys(newSettings.current).length !== 0)
       return;
 
     settingsRefs.current.forEach((element: HTMLLabelElement) => {
-      if (!settings)
-        return;
 
       const input = element.querySelector(`input#${element.htmlFor}`) as HTMLInputElement;
       const output = element.querySelector(`#${input.name}`) as HTMLElement;
       const settingName = input.name as keyof Setting;
       const value = settings[settingName].Value;
+
+      if ((value === undefined || value === null) && currentSettings.current[settingName])
+        return delete currentSettings.current[settingName];
 
       if (input.type === "range") {
         input.value = value.toString() ?? "0";

@@ -40,6 +40,12 @@ export default function MusicPlayer() {
     }
   }
 
+  function updateLoop(l: boolean) {
+    const e = tag.current;
+    if (!(e instanceof HTMLAudioElement)) return;
+    e.loop = l;
+  }
+
   function updateMute(m: boolean) {
     const e = tag.current;
     if (!(e instanceof HTMLAudioElement)) return;
@@ -86,6 +92,12 @@ export default function MusicPlayer() {
       }
     }
 
+    // Create the following:
+    // - Make new option called Loop (to loop through the current song)
+    // - Tooltips for each setting
+    // - Media Controls in ext.
+    // - Make new option type number (like range or checkbox) to select a song
+
     function nextSongEvent(ev: Event) {
       const increment = 1;
       if (ev.target instanceof HTMLAudioElement && ev.type === "ended")
@@ -104,9 +116,18 @@ export default function MusicPlayer() {
         updateVolume(message.Value as number);
       }
 
-      if (message.Type === Settings.Muted.Key && message.Event === "change") {
-        updateMute(message.Value as boolean);
+      if (message.Event === "change") {
+
+        if (message.Type === Settings.Muted.Key) {
+          updateMute(message.Value as boolean);
+        }
+  
+        if (message.Type === Settings.Loop.Key) {
+          updateLoop(message.Value as boolean);
+        }
+
       }
+
       if (IsDev) {
         console.log(sender);
         console.log(sendResponse);

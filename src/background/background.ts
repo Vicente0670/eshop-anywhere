@@ -1,5 +1,5 @@
 import { IsDev, Keys, Websites, type Message } from "../Constants.ts";
-import { SettingQuery, Settings, type Setting } from "../Settings.ts";
+import { SettingQuery, Settings, verifySettings, type Setting } from "../Settings.ts";
 
 const tabQueryOptions: chrome.tabs.QueryInfo = {
   windowType: "normal",
@@ -104,7 +104,15 @@ async function querySettings(
       return await chrome.storage.sync.set(message.Value as Setting);
     }
 
-    const storage: Setting = await chrome.storage.sync.get(null);
+    let storage: Setting = await chrome.storage.sync.get(null);
+
+    if (!storage) {
+      sendResponse(Settings);
+      return true;
+    }
+
+    storage = verifySettings(storage);
+
     sendResponse(storage);
     return true;
   }
