@@ -1,13 +1,14 @@
 import { useEffect, useRef, useState } from "react";
-import { MusicURLBase, MusicURL, type Message, IsDev, hasElements } from "../Constants.ts";
-import { SettingNames, SettingQuery, Settings, type Setting } from "../Settings.ts";
+import { MusicURLBase, MusicURL, type Message, IsDev } from "../Constants.ts";
+import { SettingQuery, Settings, verifySettings, type Setting } from "../Settings.ts";
 
 export default function MusicPlayer() {
   const [loaded, isLoaded] = useState(false);
   const [index, setIndex] = useState(0);
   const [trackIncrement, setTrackIncrement] = useState<number>(0);
   const tag = useRef<HTMLAudioElement>(null);
-  const url = useRef<string>(MusicURLBase + MusicURL[0].URL);
+  const url = useRef<string>(MusicURLBase + MusicURL[Settings.Track.Value as number].URL);
+  const importedSettings = useRef<Setting>(Settings);
 
   const audioId = "app-audio-player";
   const containerId = "app-audio-container";
@@ -40,6 +41,15 @@ export default function MusicPlayer() {
     }
   }
 
+  function updateGrace(g: boolean) {
+    const e = tag.current;
+    if (!(e instanceof HTMLAudioElement)) return;
+    if (g && (e.muted || e.volume === 0))
+      e.pause();
+    else 
+      e.play();
+  }
+
   function updateLoop(l: boolean) {
     const e = tag.current;
     if (!(e instanceof HTMLAudioElement)) return;
@@ -50,6 +60,12 @@ export default function MusicPlayer() {
     const e = tag.current;
     if (!(e instanceof HTMLAudioElement)) return;
     e.muted = m;
+  }
+
+  function updateTrack(i: number) {
+    const e = tag.current;
+    if (!(e instanceof HTMLAudioElement)) return;
+    e.src = MusicURLBase + MusicURL[i].URL;
   }
 
   function updateVolume(v: number) {
@@ -92,12 +108,6 @@ export default function MusicPlayer() {
       }
     }
 
-    // Create the following:
-    // - Make new option called Loop (to loop through the current song)
-    // - Tooltips for each setting
-    // - Media Controls in ext.
-    // - Make new option type number (like range or checkbox) to select a song
-
     function nextSongEvent(ev: Event) {
       const increment = 1;
       if (ev.target instanceof HTMLAudioElement && ev.type === "ended")
@@ -126,7 +136,12 @@ export default function MusicPlayer() {
           updateLoop(message.Value as boolean);
         }
 
+        if (message.Type === Settings.Grace.Key) {
+          updateGrace(message.Value as boolean);
+        }
       }
+
+      updateGrace(importedSettings.current.Grace.Value as boolean);
 
       if (IsDev) {
         console.log(sender);
@@ -135,19 +150,27 @@ export default function MusicPlayer() {
     }
 
     async function initialize() {
-      const msg: Message = { Type: SettingQuery }
-      const settings: Setting = await chrome.runtime.sendMessage(msg);
+      const player = tag.current;
+      const msg: Message = { Type: SettingQuery };
+      const settings: Setting = verifySettings(await chrome.runtime.sendMessage(msg));
+      importedSettings.current = settings;
 
-      if (
-        navigator.mediaSession &&
-        tag.current instanceof HTMLAudioElement &&
-        hasElements(SettingNames, Object.keys(settings))
-      ) {
+      if (navigator.mediaSession && player instanceof HTMLAudioElement) {
+
         const volume = Number.parseInt(settings.Volume.Value as string) || Settings.Volume.Value as number;
-        tag.current.src = url.current;
-        tag.current.muted = settings.Muted.Value as boolean;
-        tag.current.volume = volume / 100;
-        tag.current.load();
+
+        updateTrack(settings.Track.Value as number)
+        updateGrace(settings.Grace.Value as boolean);
+
+        if (!player.src)
+          player.src = url.current;
+
+        url.current = player.src;
+        player.loop = settings.Loop.Value as boolean;
+        player.muted = settings.Muted.Value as boolean;
+        player.volume = volume / 100;
+        player.load();
+
         setDocumentTitle();
 
         navigator.mediaSession.setActionHandler("play", mediaActions);
@@ -157,7 +180,7 @@ export default function MusicPlayer() {
         isLoaded(true);
       }
       else {
-        console.error(`Music failed to start.\nContent may already be loaded, or function "compareArrays" likely failed to validate equivalency of settings and SettingNames's keys.`);
+        console.error(`Music failed to start.\nThe music player either is not recognized, or your browser doesn't support the navigator.mediaSession API... somehow.\nCheck compatibility on [https://caniuse.com/mdn-api_navigator_mediasession].`);
       }
     }
 

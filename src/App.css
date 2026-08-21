@@ -135,6 +135,7 @@
         display: flex;
         justify-content: right;
         align-items: center;
+        gap: .5rem;
         padding: 2rem .5rem;
         background-image:
           var(--app-gradient-bg-2-front),
@@ -143,16 +144,12 @@
           var(--app-scale-bg-1-line-size) var(--app-scale-bg-1-line-size),
           cover;
 
-        .name {
-          margin-right: auto;
-          width: min(10rem, 100%);
-        }
-
         .label {
           display: flex;
           justify-content: center;
           align-items: center;
           gap: .66rem;
+          margin-left: auto;
 
           .status {
             font-size: .7rem;

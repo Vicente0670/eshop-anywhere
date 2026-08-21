@@ -103,6 +103,29 @@ export const MusicURL: MusicContainer[] = [
   }
 ];
 
+export const MusicURLSystem: MusicContainer[] = [
+  {
+    Title: "Settings and Other (3DS)",
+    Console: ["3ds"],
+    URL: "ebvanmxd/04.%20Settings%20and%20Other%20%283DS%29.mp3"
+  },
+  {
+    Title: "Wishlist (3DS)",
+    Console: ["3ds"],
+    URL: "yfiacjqb/05.%20Wishlist%20%283DS%29.mp3"
+  },
+  {
+    Title: "Purchase Software (3DS)",
+    Console: ["3ds"],
+    URL: "kwdzmmxe/06.%20Purchase%20Software%20%28June%202011%2C%203DS%29.mp3"
+  },
+  {
+    Title: "Rating (3DS)",
+    Console: ["3ds"],
+    URL: "bvanplkr/07.%20Rating%20%283DS%29.mp3"
+  }
+];
+
 export const Websites: string[] = [
   "https://*.amazon.ae/*", // United Arab Emirates
   "https://*.amazon.ca/*", // Canada
@@ -126,6 +149,8 @@ export const Websites: string[] = [
   "https://*.amazon.pl/*", // Poland
   "https://*.amazon.sa/*", // Saudi Arabia
   "https://*.amazon.sg/*", // Singapore
+
+  "https://store.steampowered.com/*",
 ];
 
 export const WishlistPaths: string[] = [
@@ -143,13 +168,10 @@ export interface Message {
 }
 
 export interface MediaMessage {
-  Type: MediaRequests,
+  Type: MediaRequests
 }
 
-type MediaRequests =
-  "play" |
-  "pause" |
-  "...";
+type MediaRequests = MediaSessionAction;
 
 interface BrandingContainer {
   [Platform: string]: Branding

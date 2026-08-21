@@ -1,0 +1,74 @@
+:root {
+  --popoverDimensions: .75rem;
+}
+
+.buttonContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 1.25rem;
+  width: 1.25rem;
+  border-radius: .75rem;
+  background-image: conic-gradient(white 0deg, transparent 0deg);
+
+  .popover,
+  .popover:hover,
+  .popover:active,
+  .popover:focus-visible {
+    background-color: transparent;
+    background-image: url("/icons/info.svg");
+  }
+
+  .popover:hover,
+  .popover:focus-visible {
+    filter: grayscale(2) brightness(2);
+  }
+
+  .popover {
+    height: var(--popoverDimensions);
+    width: var(--popoverDimensions);
+    border-radius: calc(var(--popoverDimensions) / 2);
+    border: none;
+    outline: none;
+    mix-blend-mode: difference;
+  }
+}
+
+.dialogContainer {
+  display: block;
+  height: 100%;
+  width: 0rem;
+
+  .popovertarget {
+    position: relative;
+    min-height: 1rem;
+    max-height: 10rem;
+    width: 10rem;
+    background: red;
+    border: none;
+    outline: none;
+    white-space: pre-wrap;
+    transition:
+      opacity .1s ease-in,
+      display .1s ease allow-discrete;
+    opacity: 0;
+    z-index: 1;
+  }
+}
+
+.buttonContainer:has(.popover:hover) {
+  animation: tooltipRadialProcess 1s ease 1;
+  animation-delay: 0s;
+}
+
+@keyframes tooltipRadialProcess {
+  0%, 50% {
+    outline: 1px solid white;
+    box-shadow: 0px 0px 0px 0px white;
+  }
+
+  100% {
+    outline: 1px solid transparent;
+    box-shadow: 0px 0px 0px 10px transparent;
+  }
+}
