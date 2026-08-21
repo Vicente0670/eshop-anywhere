@@ -51,7 +51,7 @@ export const Settings: Setting = {
     Value: 0
   }
 }
-// Add descIds or smth to use the popover api and to fix the layering issues
+
 export const SettingDescriptions: SettingInfo = {
   Volume: {
     Id: "description-volume",

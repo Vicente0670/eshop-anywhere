@@ -132,8 +132,6 @@ export default function Tooltip({ Id, Description }: SettingInfoLayout) {
           role="dialog"
           className="popover"
           type="button"
-          popoverTarget={Id}
-          popoverTargetAction="toggle"
           ref={button}
         />
       </div>
@@ -142,7 +140,6 @@ export default function Tooltip({ Id, Description }: SettingInfoLayout) {
           className="popoverTarget"
           id={Id}
           ref={dialog}
-          popover="auto"
         >
           <p className="description">
             {Description}
