@@ -27,7 +27,7 @@ export const Settings: Setting = {
     Value: false
   },
   Continuous: {
-    Name: "Continuous Background Play",
+    Name: "Continuous BG Play",
     Key: "settings-continuous",
     Type: "checkbox",
     Value: false
@@ -51,16 +51,40 @@ export const Settings: Setting = {
     Value: 0
   }
 }
-
+// Add descIds or smth to use the popover api and to fix the layering issues
 export const SettingDescriptions: SettingInfo = {
-  Volume: "Controls playback loudness.\nAt least now you know.",
-  Muted: "If true, music volume is disabled.\nNote that after 30 seconds of no sound (including setting the Volume to 0%), playback will cease until you resume browser activity with a shopping site open.\nTo bypass this, enable the \"Continuous\" feature.",
-  Loop: "Loops the current track. If false, plays the next track in the sequence.",
-  Grace: "Pauses playback while muted or at 0% volume. Is not dependent on your PC volume, only the extension volume. Sorry about that.",
-  Continuous: "Continues music as normal as if the player always exists. Must have a shopping site open to continue playback.",
-  Effects: "Plays sound effects from the 3DS while browsing a shopping site.",
-  Resume: "Plays the music you last left off when you return to a shopping site.",
-  Track: "The current song that is currently playing."
+  Volume: {
+    Id: "description-volume",
+    Description: "Controls playback loudness.\n\n...At least now you know."
+  },
+  Muted: {
+    Id: "description-muted",
+    Description: "Mutes the music.\nNote: After 30s of no music, playback ceases until you resume activity with a shopping site.\nBypass this using the \"Continuous BG Play\" toggle."
+  },
+  Loop: {
+    Id: "description-loop",
+    Description: "Loops the current track. Otherwise, plays the next track in the sequence."
+  },
+  Grace: {
+    Id: "description-grace",
+    Description: "Pauses playback while muted or at 0% volume. Is not dependent on your PC's volume, only the extension's volume. Sorry about that."
+  },
+  Continuous: {
+    Id: "description-continuous",
+    Description: "Continues music as normal as if the player always exists. Must have a shopping site open to continue playback."
+  },
+  Effects: {
+    Id: "description-sfx",
+    Description: "Plays sound effects from the 3DS while browsing a shopping site."
+  },
+  Resume: {
+    Id: "description-resume",
+    Description: "Plays the music you last left off when you return to a shopping site."
+  },
+  Track: {
+    Id: "description-track",
+    Description: "The song that is currently playing."
+  }
 }
 
 export const SettingNames: string[] = Object.keys(Settings);
@@ -74,12 +98,17 @@ export interface SettingsLayout {
   Value: boolean | string | number
 }
 
+export interface SettingInfoLayout {
+  Id: SettingDescIds,
+  Description: string
+}
+
 export type Setting = {
   [Setting in SettingIds]: SettingsLayout;
 };
 
 export type SettingInfo = {
-  [Setting in SettingIds]: string;
+  [Setting in SettingIds]: SettingInfoLayout;
 }
 
 export type SettingIds =
@@ -101,6 +130,16 @@ export type SettingKeys =
   "settings-sfx" |
   "settings-resume" |
   "settings-track";
+
+export type SettingDescIds =
+  "description-volume" |
+  "description-muted" |
+  "description-loop" |
+  "description-grace" |
+  "description-continuous" |
+  "description-sfx" |
+  "description-resume" |
+  "description-track";
 
 export function verifySettings(imported: Setting): Setting {
   const importedNames = Object.keys(imported);

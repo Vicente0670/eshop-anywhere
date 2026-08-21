@@ -63,6 +63,7 @@
 .app-main {
   height: 100%;
   width: 100%;
+  overflow-y: auto;
 
   .app-title {
     display: flex;
@@ -161,114 +162,107 @@
            */
           .checkbox {
             appearance: none;
+            position: relative;
             height: 1.25rem;
             width: 2.5rem;
             background-color: var(--app-color-checkbox-track-default);
             border-radius: .625rem;
             box-shadow: var(--app-color-checkbox-track-shadow-default);
-            filter: drop-shadow(0 .125rem .125rem #000000aa);
-            transition:
-              background-color .125s ease,
-              var(--app-transition-checkbox-filter);
+            transition: background-color .125s ease;
+            z-index: 1;
+
+            &:hover {
+              background-color: var(--app-color-checkbox-track-hover);
+              transition:
+                background-color 0s ease,
+                var(--app-transition-checkbox-filter);
+              animation: checkboxHoverGlow 2s ease infinite;
+            }
+
+            &:active {
+              margin-bottom: -1px;
+              box-shadow: var(--app-color-checkbox-track-shadow-active);
+              transition: background-color 0s ease;
+            }
+
+            &:focus-visible {
+              outline: 3px solid var(--app-color-checkbox-thumb);
+              outline-offset: 0;
+            }
+
+            &::after {
+              position: absolute;
+              margin: .125rem;
+              content: "";
+              height: 1rem;
+              width: 1rem;
+              background: var(--app-color-checkbox-thumb);
+              border-radius: .5rem;
+              box-shadow: var(--app-color-checkbox-thumb-shadow);
+              transition: margin-left .125s cubic-bezier(.2, 1, .67, 1);
+              z-index: 0;
+            }
+
+            &:checked {
+              background-color: var(--app-color-checkbox-track-checked-default);
+
+              &:hover {
+                background-color: var(--app-color-checkbox-track-checked-hover);
+                transition: background-color 0s ease;
+              }
+
+              &:active {
+                transition: background-color 0s ease;
+              }
+
+              &::after {
+                margin-left: calc(50% + .125rem);
+              }
+            }
+
           }
 
-          .checkbox:hover {
-            background-color: var(--app-color-checkbox-track-hover);
-            transition:
-              background-color 0s ease,
-              var(--app-transition-checkbox-filter);
-            animation: checkboxHoverGlow 2s ease infinite;
-          }
-
-          .checkbox:active {
-            box-shadow: var(--app-color-checkbox-track-shadow-active);
-            transition:
-              background-color 0s ease,
-              var(--app-transition-checkbox-filter);
-            transform: translateY(1px);
-          }
-
-          .checkbox:focus-visible {
-            outline: 3px solid var(--app-color-checkbox-thumb);
-            outline-offset: 0;
-          }
-
-          .checkbox:checked {
-            background-color: var(--app-color-checkbox-track-checked-default);
-          }
-
-          .checkbox:checked:hover {
-            background-color: var(--app-color-checkbox-track-checked-hover);
-            transition:
-              background-color 0s ease,
-              var(--app-transition-checkbox-filter);
-          }
-
-          .checkbox:checked:active {
-            transition:
-              background-color 0s ease,
-              var(--app-transition-checkbox-filter);
-          }
-
-          .checkbox::after {
-            position: absolute;
-            margin: .125rem;
-            content: "";
-            height: 1rem;
-            width: 1rem;
-            background: var(--app-color-checkbox-thumb);
-            border-radius: .5rem;
-            box-shadow: var(--app-color-checkbox-thumb-shadow);
-            transition: transform .125s cubic-bezier(.2, 1, .67, 1);
-          }
-
-          .checkbox:checked::after {
-            transform: translateX(calc(100% + .25rem));
-          }
-
-          /*
-           *  Slider Section
-           */
           .slider {
             appearance: none;
             height: 2rem;
             width: 10rem;
             background: none;
             border-radius: .5rem;
+
+            &:focus-visible {
+              outline: 2px solid var(--app-color-slider-track);
+              outline-offset: .25rem;
+            }
+
+            &::-webkit-slider-runnable-track {
+              height: 1rem;
+              background-color: var(--app-color-slider-track);
+              border-radius: .25rem;
+              box-shadow: inset 0 .125rem .25rem #121212aa;
+            }
+  
+            &::-webkit-slider-thumb {
+              appearance: none;
+              margin-top: -.5rem;
+              height: 2rem;
+              width: 1rem;
+              background: var(--app-color-slider-thumb-default);
+              border-radius: .25rem;
+              box-shadow: var(--app-color-slider-thumb-shadow-default);
+            }
+  
+            &::-webkit-slider-thumb:hover {
+              background: var(--app-color-slider-thumb-hover);
+            }
+  
+            &::-webkit-slider-thumb:active {
+              background: var(--app-color-slider-thumb-active);
+              box-shadow: var(--app-color-slider-thumb-shadow-active);
+              animation: sliderThumbActive .25s ease 1;
+            }
+            
           }
 
-          .slider::-webkit-slider-runnable-track {
-            height: 1rem;
-            background-color: var(--app-color-slider-track);
-            border-radius: .25rem;
-            box-shadow: inset 0 .125rem .25rem #121212aa;
-          }
-
-          .slider::-webkit-slider-thumb {
-            appearance: none;
-            height: 2rem;
-            width: 1rem;
-            background: var(--app-color-slider-thumb-default);
-            border-radius: .25rem;
-            box-shadow: var(--app-color-slider-thumb-shadow-default);
-            transform: translateY(-25%);
-          }
-
-          .slider::-webkit-slider-thumb:hover {
-            background: var(--app-color-slider-thumb-hover);
-          }
-
-          .slider::-webkit-slider-thumb:active {
-            background: var(--app-color-slider-thumb-active);
-            box-shadow: var(--app-color-slider-thumb-shadow-active);
-            animation: sliderThumbActive .25s ease 1;
-          }
-
-          .slider:focus-visible {
-            outline: 2px solid var(--app-color-slider-track);
-            outline-offset: .25rem;
-          }
-          
         }
 
       }

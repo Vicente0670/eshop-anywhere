@@ -101,11 +101,12 @@ export default function App() {
     ]
   ): React.JSX.Element {
 
+    const dataObj = SettingDescriptions[Name as SettingIds];
     if (Prop.Type === "range") {
       return (
         <article className="setting" key={Name}>
           <p className="name">{Prop.Name}</p>
-          <Tooltip description={SettingDescriptions[Name as SettingIds]} />
+          <Tooltip Id={dataObj.Id} Description={dataObj.Description} />
           <label className="label" htmlFor={Prop.Key} ref={auditSettingsRef}>
             <output className="status" id={Name}>?%</output>
             <input
@@ -131,6 +132,7 @@ export default function App() {
       return (
         <article className="setting" key={Name}>
           <p className="name">{Prop.Name}</p>
+          <Tooltip Id={dataObj.Id} Description={dataObj.Description} />
           <label className="label" htmlFor={Prop.Key} ref={auditSettingsRef}>
             <p className="status" id={Name} />
             <select className={`${Prop.Type}`} id={Prop.Key} name={Name} />
@@ -142,6 +144,7 @@ export default function App() {
       return (
         <article className="setting" key={Name}>
           <p className="name">{Prop.Name}</p>
+          <Tooltip Id={dataObj.Id} Description={dataObj.Description} />
           <label className="label" htmlFor={Prop.Key} ref={auditSettingsRef}>
             <p className="status" id={Name}>OFF</p>
             <input className={`${Prop.Type}`} id={Prop.Key} name={Name} type={Prop.Type} />
@@ -193,9 +196,9 @@ export default function App() {
 
       <form className="app-settings">
         <fieldset className="scrollable">
-          <legend className="legend">
+          <header className="legend">
             <p>Settings</p>
-          </legend>
+          </header>
           {
             settingsEntries.map(injectSettings)
           }
@@ -222,6 +225,13 @@ export default function App() {
         </section>
       </footer>
 
+      <svg id="app-tooltip-speech-graphic" height={0} width={0} xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <mask id="app-tooltip-speech-path" maskContentUnits="objectBoundingBox">
+            <path d="M 0 0.5 L 0.1 0.6 V 0.8 q 0 0.2 0.2 0.2 H 0.8 Q 1 1 1 0.8 V 0.2 Q 1 0 0.8 0 H 0.3 Q 0.1 0 0.1 0.2 V 0.4 Z" fill="#fff" />
+          </mask>
+        </defs>
+      </svg>
       <svg id="app-footer-curve-graphic" height={0} width={0} xmlns="http://www.w3.org/2000/svg">
         <defs>
           <mask id="app-footer-curve-path" maskContentUnits="objectBoundingBox">

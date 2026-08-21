@@ -1,7 +1,8 @@
+import type { SettingInfoLayout } from "../Settings";
 import "./Tooltip.css";
 import { useEffect, useRef } from "react";
 
-export default function Tooltip(obj: { description: string }) {
+export default function Tooltip({ Id, Description }: SettingInfoLayout) {
   const buttonContainer = useRef<HTMLDivElement>(null);
   const button = useRef<HTMLButtonElement>(null);
   const dialog = useRef<HTMLDialogElement>(null);
@@ -20,24 +21,25 @@ export default function Tooltip(obj: { description: string }) {
       const popover = dialog.current;
       popover.show();
       popover.style.opacity = "1";
+      popover.style.transform = "translateY(calc(-50% + var(--popoverContainerDimensions) / 2)) scale(1)";
     }
 
     function hideDialog() {
       if (!(dialog.current instanceof HTMLDialogElement)) return;
       const popover = dialog.current;
       popover.style.opacity = "0";
+      popover.style.transform = "translateY(calc(-50% + var(--popoverContainerDimensions) / 2)) scale(0)";
       popover.close();
     }
 
     function openDialog(ev: MouseEvent) {
       ev.preventDefault();
 
-      if (ev.type === "click") {
+      if (ev.type === "click") { 
         skipPulseAnimation();
         timeoutIdClear();
         showDialog();
         radialInfoReset();
-        button.current!.removeEventListener("click", openDialog);
       }
       else {
         timeoutId.current = setTimeout(showDialog, tooltipOpenDelayMs);
@@ -129,15 +131,22 @@ export default function Tooltip(obj: { description: string }) {
         <button
           role="dialog"
           className="popover"
+          type="button"
+          popoverTarget={Id}
+          popoverTargetAction="toggle"
           ref={button}
         />
       </div>
       <div className="dialogContainer">
         <dialog
-          className="popovertarget"
+          className="popoverTarget"
+          id={Id}
           ref={dialog}
+          popover="auto"
         >
-          {obj.description}
+          <p className="description">
+            {Description}
+          </p>
         </dialog>
       </div>
     </>
