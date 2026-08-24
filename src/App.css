@@ -222,6 +222,13 @@
 
           }
 
+          .select {
+            appearance: none;
+            height: 1rem;
+            max-width: 20rem;
+            background: red;
+          }
+
           .slider {
             appearance: none;
             height: 2rem;

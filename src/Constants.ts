@@ -126,6 +126,13 @@ export const MusicURLSystem: MusicContainer[] = [
   }
 ];
 
+export const MusicTechnicalIds = {
+  Settings: 0,
+  Wishlist: 1,
+  Purchase: 2,
+  Rating: 3
+}
+
 export const Websites: string[] = [
   "https://*.amazon.ae/*", // United Arab Emirates
   "https://*.amazon.ca/*", // Canada
@@ -154,17 +161,45 @@ export const Websites: string[] = [
 ];
 
 export const WishlistPaths: string[] = [
-  "/gc/"
+  "https://*.amazon.ae/wishlist/*", // United Arab Emirates
+  "https://*.amazon.ca/wishlist/*", // Canada
+  "https://*.amazon.co.jp/wishlist/*", // Japan
+  "https://*.amazon.co.uk/wishlist/*", // UK
+  "https://*.amazon.co.za/wishlist/*", // South Africa
+  "https://*.amazon.com/wishlist/*", // US
+  "https://*.amazon.com.au/wishlist/*", // Australia
+  "https://*.amazon.com.be/wishlist/*", // Belgium
+  "https://*.amazon.com.br/wishlist/*", // Brazil
+  "https://*.amazon.com.mx/wishlist/*", // Mexico
+  "https://*.amazon.com.tr/wishlist/*", // Turkey
+  "https://*.amazon.de/wishlist/*", // Germany
+  "https://*.amazon.eg/wishlist/*", // Egypt
+  "https://*.amazon.es/wishlist/*", // Spain
+  "https://*.amazon.fr/wishlist/*", // France
+  "https://*.amazon.ie/wishlist/*", // Ireland
+  "https://*.amazon.in/wishlist/*", // India
+  "https://*.amazon.it/wishlist/*", // Italy
+  "https://*.amazon.nl/wishlist/*", // Netherlands
+  "https://*.amazon.pl/wishlist/*", // Poland
+  "https://*.amazon.sa/wishlist/*", // Saudi Arabia
+  "https://*.amazon.sg/wishlist/*", // Singapore
+  "https://store.steampowered.com/wishlist/*",
 ];
 
 export const SettingsPaths: string[] = [
+];
 
+export const PurchasePaths: string[] = [
+  "https://store.steampowered.com/cart/*",
+];
+
+export const RatingPaths: string[] = [
 ];
 
 export interface Message {
   Type: string,
   Value?: Setting | number | boolean,
-  Event?: string,
+  Event?: string
 }
 
 export interface MediaMessage {
@@ -184,7 +219,7 @@ interface Branding {
   Link?: string,
 }
 
-interface MusicContainer {
+export interface MusicContainer {
   Title: string,
   Console: ConsoleTypes[],
   URL: string

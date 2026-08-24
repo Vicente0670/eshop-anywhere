@@ -45,7 +45,7 @@
   border-radius: 1rem;
   filter: drop-shadow(0 0 .25rem var(--app-color-paragraph));
   transition: outline-offset .1s ease, outline-color .1s ease;
-  z-index: 100;
+  z-index: 2;
 
   .popoverTarget {
     position: absolute;
@@ -63,7 +63,7 @@
     transform: translateY(calc(-50% + var(--popoverContainerDimensions) / 2)) scale(0);
     transform-origin: left;
     opacity: 0;
-    z-index: 100;
+    z-index: 2;
 
     .description {
       padding: 10%;

@@ -1,4 +1,4 @@
-import { isArrayEqual } from "./Constants";
+import { isArrayEqual, MusicURL } from "./Constants";
 
 // Default
 export const Settings: Setting = {
@@ -44,6 +44,12 @@ export const Settings: Setting = {
     Type: "checkbox",
     Value: true
   },
+  Technical: {
+    Name: "WL & Setting Music",
+    Key: "settings-technical",
+    Type: "checkbox",
+    Value: true
+  },
   Track: {
     Name: "Track Number",
     Key: "settings-track",
@@ -81,26 +87,27 @@ export const SettingDescriptions: SettingInfo = {
     Id: "description-resume",
     Description: "Plays the music you last left off when you return to a shopping site."
   },
+  Technical: {
+    Id: "description-technical",
+    Description: "Plays different music when visiting a site's Wishlist/Settings pages."
+  },
   Track: {
     Id: "description-track",
     Description: "The song that is currently playing."
   }
 }
 
+export const SettingNumberData: NumberFormat = {
+  "settings-track": MusicURL,
+};
+
 export const SettingNames: string[] = Object.keys(Settings);
 
 export const SettingQuery: string = "settings-query";
+export const AppMediaQuery: string = "settings-appmediaquery";
 
-export interface SettingsLayout {
-  Name: string,
-  Key: SettingKeys,
-  Type: "checkbox" | "number" | "range",
-  Value: boolean | string | number
-}
-
-export interface SettingInfoLayout {
-  Id: SettingDescIds,
-  Description: string
+type NumberFormat = {
+  [Id in SettingKeys]?: object[];
 }
 
 export type Setting = {
@@ -119,6 +126,7 @@ export type SettingIds =
   "Continuous" |
   "Effects" |
   "Resume" |
+  "Technical" |
   "Track";
 
 export type SettingKeys =
@@ -129,6 +137,7 @@ export type SettingKeys =
   "settings-continuous" |
   "settings-sfx" |
   "settings-resume" |
+  "settings-technical" |
   "settings-track";
 
 export type SettingDescIds =
@@ -139,8 +148,27 @@ export type SettingDescIds =
   "description-continuous" |
   "description-sfx" |
   "description-resume" |
+  "description-technical" |
   "description-track";
 
+export interface SettingsLayout {
+  Name: string,
+  Key: SettingKeys,
+  Type: "checkbox" | "number" | "range",
+  Value: unknown
+}
+
+export interface SettingInfoLayout {
+  Id: SettingDescIds,
+  Description: string
+}
+
+/**
+ * Updates imported settings to match the structure of the default {@link Settings}.
+ * 
+ * @param imported the old settings
+ * @returns updated settings
+ */
 export function verifySettings(imported: Setting): Setting {
   const importedNames = Object.keys(imported);
   if (isArrayEqual(importedNames, SettingNames))
@@ -153,11 +181,11 @@ export function verifySettings(imported: Setting): Setting {
     if (!defaultNameSet.has(name))
       delete imported[name as SettingIds];
   });
+  console.log(imported);
 
   defaultNameSet.forEach((name: string) => {
-    const id = name as SettingIds;
-    if (!importedNameSet.has(id))
-      imported[id] = Settings[id];
+    if (!importedNameSet.has(name))
+      imported[name as SettingIds] = Settings[name as SettingIds];
   });
 
   return imported;

@@ -1,14 +1,51 @@
-import { IsDev, Keys, Websites, type Message } from "../Constants.ts";
-import { SettingQuery, Settings, verifySettings, type Setting } from "../Settings.ts";
+import { IsDev, Keys, MusicTechnicalIds, PurchasePaths, RatingPaths, SettingsPaths, Websites, WishlistPaths, type Message } from "../Constants.ts";
+import { SettingQuery, Settings, verifySettings, type Setting, type SettingIds } from "../Settings.ts";
 
 const tabQueryOptions: chrome.tabs.QueryInfo = {
   windowType: "normal",
-  status: "complete",
   url: Websites
 }
 
 function delimiter(str: string): string {
   return str + "() - ";
+}
+
+function tabExists(t: chrome.tabs.Tab[]): boolean {
+  return t.length === 1 || t.find(e => e.active) !== undefined;
+}
+
+async function auditTechnicalPage() {
+  const msg: Message = {
+    Type: Settings.Technical.Key,
+    Event: "change"
+  }
+
+  const WishlistTabs = await chrome.tabs.query({ url: WishlistPaths });
+  if (tabExists(WishlistTabs)) {
+    msg.Value = MusicTechnicalIds.Wishlist;
+    return await chrome.runtime.sendMessage(msg);
+  }
+
+  const SettingsTabs = await chrome.tabs.query({ url: SettingsPaths });
+  if (tabExists(SettingsTabs)) {
+    msg.Value = MusicTechnicalIds.Settings;
+    return await chrome.runtime.sendMessage(msg);
+  }
+
+  const PurchaseTabs = await chrome.tabs.query({ url: PurchasePaths });
+  if (tabExists(PurchaseTabs)) {
+    msg.Value = MusicTechnicalIds.Purchase;
+    return await chrome.runtime.sendMessage(msg);
+  }
+
+  const RatingTabs = await chrome.tabs.query({ url: RatingPaths });
+  if (tabExists(RatingTabs)) {
+    msg.Value = MusicTechnicalIds.Rating;
+    return await chrome.runtime.sendMessage(msg);
+  }
+
+  msg.Value = -1;
+  return await chrome.runtime.sendMessage(msg);
 }
 
 let creatingDocument: null | void;
@@ -33,8 +70,8 @@ async function spawnDocument(tabs: chrome.tabs.Tab[]) {
 
   if (contextPresent) {
     if (IsDev)
-      console.info(`${functionName}The offscreen context "${Keys.OffscreenURL}" already exists!`);
-    return true;
+      console.info(`${functionName}The offscreen context "${Keys.OffscreenURL}" already exists.`);
+    return await auditTechnicalPage();
   }
 
   if (!creatingDocument) {
@@ -76,7 +113,7 @@ async function auditTabUpdate(
 async function auditTabChange() {
   const tabs = await chrome.tabs.query(tabQueryOptions);
   await spawnDocument(tabs);
-
+  
   const settings = await chrome.storage.sync.get(null);
   if (Object.keys(settings).length === 0)
     await chrome.storage.sync.set(Settings);
@@ -98,10 +135,32 @@ async function querySettings(
     console.groupEnd();
   }
 
+  async function queryTechnicalPage() {
+    const name = delimiter(queryTechnicalPage.name);
+    auditTechnicalPage();
+  
+    if (IsDev) {
+      console.group(name);
+      console.log(message, sender, sendResponse);
+      console.groupEnd();
+    }
+  
+    return true;
+  }
+
   if (message.Type === SettingQuery) {
 
     if (message.Value) {
-      return await chrome.storage.sync.set(message.Value as Setting);
+
+      const obj = message.Value as Setting;
+      Object.entries(obj).forEach(([key, prop]) => {
+        if (prop.Value === null || prop.Value === undefined) {
+          const k = key as SettingIds;
+          obj[k].Value = Settings[k].Value;
+        }
+      });
+
+      return await chrome.storage.sync.set(obj);
     }
 
     let storage: Setting = await chrome.storage.sync.get(null);
@@ -112,13 +171,16 @@ async function querySettings(
     }
 
     storage = verifySettings(storage);
-
     sendResponse(storage);
     return true;
   }
 
+  if (message.Type === Settings.Technical.Key)
+    return queryTechnicalPage();
+
   return true;
 }
+
 
 chrome.tabs.onUpdated.addListener(auditTabUpdate);
 chrome.tabs.onActivated.addListener(auditTabChange);

@@ -114,6 +114,7 @@ export default function Tooltip({ Id, Description }: SettingInfoLayout) {
 
     if (diag instanceof HTMLDialogElement) {
       diag.addEventListener("blur", onBlurDialog);
+      diag.addEventListener("mouseleave", closeDialog);
     }
 
     return () => {
@@ -122,6 +123,7 @@ export default function Tooltip({ Id, Description }: SettingInfoLayout) {
       btn?.removeEventListener("mouseleave", closeDialog);
       btn?.removeEventListener("focusin", onFocusDialog);
       diag?.removeEventListener("blur", onBlurDialog);
+      diag?.removeEventListener("mouseleave", closeDialog);
     }
   });
 

@@ -1,7 +1,7 @@
 import "./App.css";
 import { useEffect, useRef } from "react";
-import { Brand, IsDev, type Message } from "./Constants.ts";
-import { Settings, type SettingsLayout, type Setting, SettingQuery, verifySettings, SettingDescriptions, type SettingIds } from "./Settings.ts";
+import { Brand, IsDev, type Message, type MusicContainer } from "./Constants.ts";
+import { Settings, type SettingsLayout, type Setting, SettingQuery, verifySettings, SettingDescriptions, type SettingIds, SettingNumberData, type SettingKeys, AppMediaQuery } from "./Settings.ts";
 import Tooltip from "./components/Tooltip.tsx";
 
 export default function App() {
@@ -9,6 +9,53 @@ export default function App() {
   const currentSettings = useRef<Setting>(Settings);
   const newSettings = useRef<Setting>(Object());
   const settingsEntries = Object.entries(Settings);
+
+  function popupClose(ev: Event) {
+    const entries = Object.entries(newSettings.current);
+
+    if (entries.length) {
+
+      entries.forEach(([Name, Prop]) => {
+        const settingName = Name as keyof Setting;
+        currentSettings.current[settingName].Value = Prop.Value;
+      });
+
+      const data: Message = {
+        Type: SettingQuery,
+        Value: currentSettings.current,
+      }
+
+      console.log(data);
+      console.log(Object.assign.call({}, entries));
+
+      if (document.visibilityState === "hidden")
+        chrome.runtime.sendMessage(data);
+    }
+    if (IsDev) {
+      console.group();
+      console.info("Visibility of App.tsx has been mutated. Event message is displayed below.");
+      console.info(ev);
+      console.groupEnd();
+    }
+  }
+
+  async function mediaUpdate(
+    message: Message,
+    sender: chrome.runtime.MessageSender,
+    sendResponse: (response: boolean) => void
+  ) {
+    if (message.Type === AppMediaQuery && message.Event === "change") {
+      console.group(mediaUpdate.name);
+      console.log(message);
+      console.groupEnd();
+    }
+
+    if (IsDev) {
+      console.group(mediaUpdate.name);
+      console.log(message, sender, sendResponse);
+      console.groupEnd();
+    }
+  }
 
   async function inputUpdate(ev: Event) {
     const target = ev.target as HTMLInputElement;
@@ -20,11 +67,12 @@ export default function App() {
       value = Number.parseInt(target.value) || 0;
       output.textContent = `${value}%`;
     }
-    else if (!target.type && ev.target instanceof HTMLSelectElement) {
+    else if (Object.hasOwn(SettingNumberData, parent.htmlFor)) {
       const select = ev.target as HTMLSelectElement;
       value = select.selectedIndex;
     }
     else {
+      console.log(ev.type);
       value = target.checked;
       output.textContent = value ? "ON" : "OFF";
     }
@@ -62,7 +110,7 @@ export default function App() {
         input = element.querySelector(`#${element.htmlFor}`) as HTMLSelectElement;
 
       if (input.type === "range") {
-        input.value = value.toString() ?? "0";
+        input.value = value as string ?? "1";
         return output.textContent = `${value}%`;
       }
       if (input.type === "checkbox") {
@@ -94,6 +142,21 @@ export default function App() {
     }
   }
 
+  function injectSelections(
+    obj: object,
+    index: number,
+    key: SettingKeys
+  ): React.JSX.Element {
+    
+    // Move this into a new function if implementing multiple selections
+    if (key === Settings.Track.Key) {
+      const element = obj as MusicContainer;
+      return <option key={element.Title} value={index}>{`[${index}] ${element.Title}`}</option>;
+    }
+
+    return <></>;
+  }
+
   function injectSettings(
     [Name, Prop]: [
       string,
@@ -102,6 +165,7 @@ export default function App() {
   ): React.JSX.Element {
 
     const dataObj = SettingDescriptions[Name as SettingIds];
+
     if (Prop.Type === "range") {
       return (
         <article className="setting" key={Name}>
@@ -129,13 +193,22 @@ export default function App() {
       )
     }
     else if (Prop.Type === "number") {
+
+      if (!SettingNumberData[Prop.Key]) return <></>;
+
       return (
         <article className="setting" key={Name}>
           <p className="name">{Prop.Name}</p>
           <Tooltip Id={dataObj.Id} Description={dataObj.Description} />
           <label className="label" htmlFor={Prop.Key} ref={auditSettingsRef}>
             <p className="status" id={Name} />
-            <select className={`${Prop.Type}`} id={Prop.Key} name={Name} />
+            <select className={`select`} id={Prop.Key} name={Name}>
+              {
+                Object.values(SettingNumberData[Prop.Key as SettingKeys] as Array<object>).map(
+                  (value, index) => injectSelections(value, index, Prop.Key)
+                )
+              }
+            </select>
           </label>
         </article>
       )
@@ -154,36 +227,14 @@ export default function App() {
     }
   }
 
-  function popupClose(ev: Event) {
-    const entries = Object.entries(newSettings.current);
-
-    if (entries.length) {
-
-      entries.forEach(([Name, Prop]) => {
-        const settingName = Name as keyof Setting;
-        currentSettings.current[settingName].Value = Prop.Value;
-      });
-
-      const data: Message = {
-        Type: SettingQuery,
-        Value: currentSettings.current,
-      }
-
-      if (document.visibilityState === "hidden")
-        chrome.runtime.sendMessage(data);
-    }
-    if (IsDev) {
-      console.group();
-      console.info("Visibility of App.tsx has been mutated. Event message is displayed below.");
-      console.info(ev);
-      console.groupEnd();
-    }
-  }
-
   useEffect(() => {
     applyUserSettings();
     document.addEventListener("visibilitychange", popupClose);
-    return () => document.removeEventListener("visibilitychange", popupClose);
+    chrome.runtime.onMessage.addListener(mediaUpdate);
+    return () => {
+      document.removeEventListener("visibilitychange", popupClose);
+      chrome.runtime.onMessage.removeListener(mediaUpdate);
+    }
   });
 
   return (
