@@ -54,6 +54,7 @@
   --app-color-slider-track: var(--app-color-accent);
 
   --app-scale-icon-title: 2rem;
+  --app-scale-media-height: 4rem;
   --app-footer-height: 4rem;
   --app-scale-icon-footer: 1rem;
 
@@ -63,6 +64,9 @@
 .app-main {
   height: 100%;
   width: 100%;
+  scrollbar-color:
+    var(--app-color-scrollbar-thumb) var(--app-color-scrollbar-track);
+  scrollbar-width: thin;
   overflow-y: auto;
 
   .app-title {
@@ -90,16 +94,27 @@
   }
 
   .app-settings {
-    margin: 0 auto;
-    margin-top: .75rem;
-    height: 80%;
-    width: 95%;
-    border-radius: .5rem;
-    overflow: clip;
+    height: auto;
+    width: 100%;
+
+    .media {
+      position: sticky;
+      top: 0;
+      left: 0;
+      height: var(--app-scale-media-height);
+      width: 100%;
+      background: var(--app-color-main-title-bg);
+      border-bottom: 2px solid var(--app-color-main-title-border);
+      box-shadow: 0px .3rem .3rem #00000080;
+      animation: musicPlayerSpawn .33s ease 1;
+      z-index: 2;
+    }
 
     .scrollable {
+      margin: .75rem auto;
+      margin-bottom: 4rem;
       height: 100%;
-      width: 100%;
+      width: 95%;
       background-image:
         var(--app-gradient-bg-2-front),
         var(--app-gradient-bg-2-back);
@@ -107,15 +122,13 @@
         var(--app-scale-bg-1-line-size) var(--app-scale-bg-1-line-size),
         cover;
       border: none;
-      scrollbar-width: thin;
-      scrollbar-color:
-        var(--app-color-scrollbar-thumb) var(--app-color-scrollbar-track);
-      overflow: clip auto;
+      border-radius: .5rem;
+      overflow: clip;
 
       .legend {
         display: flex;
         align-items: center;
-        height: 10%;
+        height: 3rem;
         width: 100%;
         background-image:
           var(--app-gradient-bg-2-front),
@@ -169,7 +182,7 @@
             border-radius: .625rem;
             box-shadow: var(--app-color-checkbox-track-shadow-default);
             transition: background-color .125s ease;
-            z-index: 1;
+            z-index: 0;
 
             &:hover {
               background-color: var(--app-color-checkbox-track-hover);
@@ -225,8 +238,10 @@
           .select {
             appearance: none;
             height: 1rem;
-            max-width: 20rem;
-            background: red;
+            max-width: 10rem;
+            outline: none;
+            border: none;
+            word-wrap: break-word;
           }
 
           .slider {
@@ -247,7 +262,7 @@
               border-radius: .25rem;
               box-shadow: inset 0 .125rem .25rem #121212aa;
             }
-  
+
             &::-webkit-slider-thumb {
               appearance: none;
               margin-top: -.5rem;
@@ -257,17 +272,17 @@
               border-radius: .25rem;
               box-shadow: var(--app-color-slider-thumb-shadow-default);
             }
-  
+
             &::-webkit-slider-thumb:hover {
               background: var(--app-color-slider-thumb-hover);
             }
-  
+
             &::-webkit-slider-thumb:active {
               background: var(--app-color-slider-thumb-active);
               box-shadow: var(--app-color-slider-thumb-shadow-active);
               animation: sliderThumbActive .25s ease 1;
             }
-            
+
           }
 
         }
@@ -285,6 +300,7 @@
     width: 100%;
     pointer-events: none;
     filter: drop-shadow(0px 0px 5px #000);
+    overflow: hidden;
 
     * {
       pointer-events: all;
@@ -299,8 +315,15 @@
       height: 50%;
       width: max-content;
       background: var(--app-color-bg-3);
-      transform: translateY(100%);
+      transition: transform .3s ease, filter .3s ease;
+      transform: translate(-55vw, 0%);
+      filter: brightness(0.3);
       z-index: -1;
+
+      &.open {
+        transform: translate(0%, 0%);
+        filter: brightness(1);
+      }
 
       .name {
         color: var(--app-color-accent);
@@ -399,6 +422,16 @@
   left: 0;
 }
 
+@keyframes musicPlayerSpawn {
+  0% {
+    height: 0rem;
+  }
+
+  100% {
+    height: var(--app-scale-media-height);
+  }
+}
+
 @keyframes socialLinkPulse {
 
   0%,
@@ -435,4 +468,32 @@
       var(--app-color-slider-thumb-shadow-active),
       0 0 .125rem .5rem #aaaaaa00;
   }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-main .app-settings {
+
+    .media {
+      animation: none;
+    }
+
+    .scrollable {
+      animation: none;
+
+      .setting .label .checkbox {
+
+        &,
+        &:hover,
+        &:active,
+        &:checked {
+          animation: none;
+          transition: none;
+        }
+
+      }
+
+    }
+
+  }
+
 }

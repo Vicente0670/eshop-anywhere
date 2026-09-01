@@ -10,25 +10,29 @@ function delimiter(str: string): string {
   return str + "() - ";
 }
 
-function tabExists(t: chrome.tabs.Tab[]): boolean {
-  return t.length === 1 || t.find(e => e.active) !== undefined;
-}
 
 async function auditTechnicalPage() {
-  const msg: Message = {
-    Type: Settings.Technical.Key,
-    Event: "change"
+  
+  function tabExists(t: chrome.tabs.Tab[]): boolean {
+    const tab = t.find(e => e.active);
+    return (t.length === 1) || (tab !== undefined && tab !== null);
   }
 
-  const WishlistTabs = await chrome.tabs.query({ url: WishlistPaths });
-  if (tabExists(WishlistTabs)) {
-    msg.Value = MusicTechnicalIds.Wishlist;
-    return await chrome.runtime.sendMessage(msg);
+  const msg: Message = {
+    Type: Settings.Technical.Key,
+    Value: -1,
+    Event: "change"
   }
 
   const SettingsTabs = await chrome.tabs.query({ url: SettingsPaths });
   if (tabExists(SettingsTabs)) {
     msg.Value = MusicTechnicalIds.Settings;
+    return await chrome.runtime.sendMessage(msg);
+  }
+
+  const WishlistTabs = await chrome.tabs.query({ url: WishlistPaths });
+  if (tabExists(WishlistTabs)) {
+    msg.Value = MusicTechnicalIds.Wishlist;
     return await chrome.runtime.sendMessage(msg);
   }
 
@@ -44,7 +48,6 @@ async function auditTechnicalPage() {
     return await chrome.runtime.sendMessage(msg);
   }
 
-  msg.Value = -1;
   return await chrome.runtime.sendMessage(msg);
 }
 
@@ -104,7 +107,7 @@ async function auditTabUpdate(
 
   if (tab?.status == "complete") {
     const tabs = await chrome.tabs.query(tabQueryOptions);
-    await spawnDocument(tabs);
+    return await spawnDocument(tabs);
   }
 
   return true;
@@ -116,7 +119,7 @@ async function auditTabChange() {
   
   const settings = await chrome.storage.sync.get(null);
   if (Object.keys(settings).length === 0)
-    await chrome.storage.sync.set(Settings);
+    return await chrome.storage.sync.set(Settings);
 
   return true;
 }
@@ -137,7 +140,7 @@ async function querySettings(
 
   async function queryTechnicalPage() {
     const name = delimiter(queryTechnicalPage.name);
-    auditTechnicalPage();
+    await auditTechnicalPage();
   
     if (IsDev) {
       console.group(name);

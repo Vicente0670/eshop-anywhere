@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { MusicURLBase, MusicURL, type Message, IsDev, MusicURLSystem } from "../Constants.ts";
+import { MusicURLBase, MusicURL, type Message, IsDev, MusicURLSystem, MusicTechnicalIds } from "../Constants.ts";
 import { AppMediaQuery, SettingQuery, Settings, type Setting } from "../Settings.ts";
 
 export default function MusicPlayer() {
@@ -7,6 +7,7 @@ export default function MusicPlayer() {
   const [index, setIndex] = useState(0);
   const [trackIncrement, setTrackIncrement] = useState<number>(0);
   const [technicalMusicPlaying, setTechnicalMusicPlayState] = useState<boolean>(false);
+  const [updatableMusic, setUpdatableMusic] = useState<boolean>(true);
   const tag = useRef<HTMLAudioElement>(null);
   const url = useRef<string>(MusicURLBase + MusicURL[0].URL);
   const importedSettings = useRef<Setting>(Settings);
@@ -76,10 +77,10 @@ export default function MusicPlayer() {
   }
 
   function updateTrack(i: number) {
-    setTechnicalMusicPlayState(false);
     const e = tag.current;
     if (!(e instanceof HTMLAudioElement)) return;
     e.src = MusicURLBase + MusicURL[i].URL;
+    setIndex(i);
   }
 
   function updateVolume(v: number) {
@@ -124,8 +125,9 @@ export default function MusicPlayer() {
 
     function setTechnicalMusic(index: number) {
       const player = tag.current;
-      if (player instanceof HTMLAudioElement) {
-        const mus = MusicURLSystem[index]
+      if (player instanceof HTMLAudioElement && !technicalMusicPlaying) {
+        setTechnicalMusicPlayState(true);
+        const mus = MusicURLSystem[index];
         document.title = mus.Title;
         url.current = MusicURLBase + mus.URL;
         player.src = url.current;
@@ -165,22 +167,20 @@ export default function MusicPlayer() {
         if (message.Type === Settings.Grace.Key) {
           updateGrace(message.Value as boolean);
         }
-
+        
         if (message.Type === Settings.Track.Key) {
           updateTrack(message.Value as number ?? 0);
         }
-
-        console.log(importedSettings.current.Technical.Value as boolean);
-        
-
         if (message.Type === Settings.Technical.Key && importedSettings.current.Technical.Value as boolean == true) {
           const value = message.Value as number;
-          if (!technicalMusicPlaying && value > 0) {
-            setTechnicalMusicPlayState(true);
-            setTechnicalMusic(value ?? 0);
+          if (value >= 0) {
+            setTechnicalMusic(value ?? MusicTechnicalIds.Settings);
+            setUpdatableMusic(true);
           }
-          else {
+          else if (updatableMusic) {
             setTechnicalMusicPlayState(false);
+            setUpdatableMusic(false);
+            updateTrack(index);
           }
         }
       }
@@ -208,7 +208,6 @@ export default function MusicPlayer() {
         let track;
         if (typeof settings.Track.Value === "number")
           track = settings.Track.Value as number;
-          
         updateTrack(track ?? 0);
         updateGrace(settings.Grace.Value as boolean);
 
@@ -235,6 +234,7 @@ export default function MusicPlayer() {
       else {
         console.error(`Music failed to start.\nThe music player either is not recognized, or your browser doesn't support the navigator.mediaSession API... somehow.\nCheck compatibility on [https://caniuse.com/mdn-api_navigator_mediasession].`);
       }
+      return;
     }
 
     if (!loaded && index == 0) {
@@ -252,7 +252,13 @@ export default function MusicPlayer() {
 
       chrome.runtime.onMessage.removeListener(updateValues);
     }
-  }, [loaded, index, technicalMusicPlaying, trackIncrement]);
+  }, [
+    loaded,
+    index,
+    technicalMusicPlaying,
+    trackIncrement,
+    updatableMusic
+  ]);
 
   return (
     <div id={containerId}>

@@ -183,10 +183,12 @@ export const WishlistPaths: string[] = [
   "https://*.amazon.pl/wishlist/*", // Poland
   "https://*.amazon.sa/wishlist/*", // Saudi Arabia
   "https://*.amazon.sg/wishlist/*", // Singapore
+  
   "https://store.steampowered.com/wishlist/*",
 ];
 
 export const SettingsPaths: string[] = [
+  "https://*.amazon.com/gp/css/*",
 ];
 
 export const PurchasePaths: string[] = [
@@ -194,7 +196,10 @@ export const PurchasePaths: string[] = [
 ];
 
 export const RatingPaths: string[] = [
+  "https://www.amazon.com/review/*"
 ];
+
+export const LogoMinAppearanceHeight = 16 * 5;
 
 export interface Message {
   Type: string,

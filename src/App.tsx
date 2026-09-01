@@ -1,6 +1,6 @@
 import "./App.css";
 import { useEffect, useRef } from "react";
-import { Brand, IsDev, type Message, type MusicContainer } from "./Constants.ts";
+import { Brand, IsDev, LogoMinAppearanceHeight, type Message, type MusicContainer } from "./Constants.ts";
 import { Settings, type SettingsLayout, type Setting, SettingQuery, verifySettings, SettingDescriptions, type SettingIds, SettingNumberData, type SettingKeys, AppMediaQuery } from "./Settings.ts";
 import Tooltip from "./components/Tooltip.tsx";
 
@@ -8,7 +8,41 @@ export default function App() {
   const settingsRefs = useRef<HTMLLabelElement[]>([]);
   const currentSettings = useRef<Setting>(Settings);
   const newSettings = useRef<Setting>(Object());
+  const logo = useRef<HTMLElement>(null);
+  const media = useRef<HTMLElement>(null);
   const settingsEntries = Object.entries(Settings);
+
+  function footerLogoPrompt(ev: React.UIEvent) {
+    const target = ev.nativeEvent.target as HTMLElement;
+    const offset = target.scrollTop;
+    const output = logo.current;
+
+    if (!target || !output) return;
+
+    if (offset >= LogoMinAppearanceHeight)
+      output.classList.add("open");
+    else
+      output.classList.remove("open");
+  }
+
+  async function mediaUpdate(
+    message: Message,
+    sender: chrome.runtime.MessageSender,
+    sendResponse: (response: boolean) => void
+  ) {
+    if (message.Type === AppMediaQuery && message.Event === "change") {
+      console.group(mediaUpdate.name);
+      console.log(message);
+      console.groupEnd();
+
+    }
+
+    if (IsDev) {
+      console.group(mediaUpdate.name);
+      console.log(message, sender, sendResponse);
+      console.groupEnd();
+    }
+  }
 
   function popupClose(ev: Event) {
     const entries = Object.entries(newSettings.current);
@@ -35,24 +69,6 @@ export default function App() {
       console.group();
       console.info("Visibility of App.tsx has been mutated. Event message is displayed below.");
       console.info(ev);
-      console.groupEnd();
-    }
-  }
-
-  async function mediaUpdate(
-    message: Message,
-    sender: chrome.runtime.MessageSender,
-    sendResponse: (response: boolean) => void
-  ) {
-    if (message.Type === AppMediaQuery && message.Event === "change") {
-      console.group(mediaUpdate.name);
-      console.log(message);
-      console.groupEnd();
-    }
-
-    if (IsDev) {
-      console.group(mediaUpdate.name);
-      console.log(message, sender, sendResponse);
       console.groupEnd();
     }
   }
@@ -147,7 +163,7 @@ export default function App() {
     index: number,
     key: SettingKeys
   ): React.JSX.Element {
-    
+
     // Move this into a new function if implementing multiple selections
     if (key === Settings.Track.Key) {
       const element = obj as MusicContainer;
@@ -231,6 +247,7 @@ export default function App() {
     applyUserSettings();
     document.addEventListener("visibilitychange", popupClose);
     chrome.runtime.onMessage.addListener(mediaUpdate);
+
     return () => {
       document.removeEventListener("visibilitychange", popupClose);
       chrome.runtime.onMessage.removeListener(mediaUpdate);
@@ -238,14 +255,22 @@ export default function App() {
   });
 
   return (
-    <main className="app-main">
+    <main className="app-main" onScroll={footerLogoPrompt}>
 
-      <div className="app-title">
+      <header className="app-title">
         <h1>eShop Anywhere</h1>
         <img className="icon" src={Brand.Shop.Icon} alt={Brand.Shop.Alt} draggable={false} />
-      </div>
+      </header>
 
       <form className="app-settings">
+        <section className="media" ref={media}>
+          <div className="metadata">
+
+          </div>
+          <div className="controls">
+
+          </div>
+        </section>
         <fieldset className="scrollable">
           <header className="legend">
             <p>Settings</p>
@@ -257,7 +282,7 @@ export default function App() {
       </form>
 
       <footer className="app-footer">
-        <section className="title">
+        <section className="title" ref={logo}>
           <p className="name">eShop Anywhere</p>
           <div className="curve-div" />
         </section>
