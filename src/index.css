@@ -102,10 +102,10 @@ p {
 a {
   color: var(--app-color-link-default);
   text-decoration: underline;
-}
 
-a:hover {
-  color: var(--app-color-link-hover)
+  &:hover {
+    color: var(--app-color-link-hover)
+  }
 }
 
 button {
@@ -115,16 +115,16 @@ button {
   font-size: calc(var(--app-scale-p) - .05rem);
   color: var(--app-color-button-text-default);
 
+  &:hover {
+    border-color: var(--app-color-button-text-hover);
+    background: var(--app-color-button-bg-hover);
+    color: var(--app-color-button-text-hover);
+  }
+
   a {
     color: initial;
     text-decoration: none;
   }
-}
-
-button:hover {
-  border-color: var(--app-color-button-text-hover);
-  background: var(--app-color-button-bg-hover);
-  color: var(--app-color-button-text-hover);
 }
 
 main {

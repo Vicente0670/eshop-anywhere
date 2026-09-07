@@ -9,7 +9,7 @@ export default function App() {
   const currentSettings = useRef<Setting>(Settings);
   const newSettings = useRef<Setting>(Object());
   const logo = useRef<HTMLElement>(null);
-  const media = useRef<HTMLElement>(null);
+  const media = useRef<HTMLFieldSetElement>(null);
   const settingsEntries = Object.entries(Settings);
 
   function footerLogoPrompt(ev: React.UIEvent) {
@@ -34,7 +34,6 @@ export default function App() {
       console.group(mediaUpdate.name);
       console.log(message);
       console.groupEnd();
-
     }
 
     if (IsDev) {
@@ -263,14 +262,42 @@ export default function App() {
       </header>
 
       <form className="app-settings">
-        <section className="media" ref={media}>
+        <fieldset className="media" ref={media}>
           <div className="metadata">
-
+            <h3 className="title">Song Name</h3>
+            <div className="data">
+              <p className="album">Album Name</p>
+              <label
+                htmlFor="music-progress"
+                className="progress-label"
+              >
+                <span id="music-progress-current-time">00:00</span>/
+                <span id="music-progress-full-time">00:01</span>
+              </label>
+            </div>
           </div>
           <div className="controls">
-
+            <div className="media-container prev-container">
+              <button type="button" aria-label="Previous track" />
+              <button type="button" aria-label="Go back 10 seconds" />
+            </div>
+            <div className="progress-container">
+              <input
+                type="range"
+                className="progress"
+                id="music-progress"
+                name="music-progress"
+                min={0}
+                max={100}
+                step={1 / 20}
+              />
+            </div>
+            <div className="media-container next-container">
+              <button type="button" aria-label="Skip 10 seconds" />
+              <button type="button" aria-label="Next track" />
+            </div>
           </div>
-        </section>
+        </fieldset>
         <fieldset className="scrollable">
           <header className="legend">
             <p>Settings</p>

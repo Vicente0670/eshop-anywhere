@@ -158,6 +158,7 @@ export const Websites: string[] = [
   "https://*.amazon.sg/*", // Singapore
 
   "https://store.steampowered.com/*",
+  "https://checkout.steampowered.com/*",
 ];
 
 export const WishlistPaths: string[] = [
@@ -189,14 +190,17 @@ export const WishlistPaths: string[] = [
 
 export const SettingsPaths: string[] = [
   "https://*.amazon.com/gp/css/*",
+  "https://store.steampowered.com/agecheck/*",
 ];
 
 export const PurchasePaths: string[] = [
+  "https://*.amazon.com/checkout/*",
   "https://store.steampowered.com/cart/*",
+  "https://checkout.steampowered.com/checkout/*",
 ];
 
 export const RatingPaths: string[] = [
-  "https://www.amazon.com/review/*"
+  "https://*.amazon.com/review/*"
 ];
 
 export const LogoMinAppearanceHeight = 16 * 5;

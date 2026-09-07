@@ -44,6 +44,12 @@ export const Settings: Setting = {
     Type: "checkbox",
     Value: true
   },
+  Paused: {
+    Name: "Paused",
+    Key: "settings-paused",
+    Type: "checkbox",
+    Value: false
+  },
   Technical: {
     Name: "WL & Setting Music",
     Key: "settings-technical",
@@ -87,6 +93,10 @@ export const SettingDescriptions: SettingInfo = {
     Id: "description-resume",
     Description: "Plays the music you last left off when you return to a shopping site."
   },
+  Paused: {
+    Id: "description-paused",
+    Description: "If true, music is paused."
+  },
   Technical: {
     Id: "description-technical",
     Description: "Plays different music when visiting a site's Wishlist/Settings pages."
@@ -126,6 +136,7 @@ export type SettingIds =
   "Continuous" |
   "Effects" |
   "Resume" |
+  "Paused" |
   "Technical" |
   "Track";
 
@@ -137,6 +148,7 @@ export type SettingKeys =
   "settings-continuous" |
   "settings-sfx" |
   "settings-resume" |
+  "settings-paused" |
   "settings-technical" |
   "settings-track";
 
@@ -148,6 +160,7 @@ export type SettingDescIds =
   "description-continuous" |
   "description-sfx" |
   "description-resume" |
+  "description-paused" |
   "description-technical" |
   "description-track";
 

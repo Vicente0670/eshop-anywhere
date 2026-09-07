@@ -7,6 +7,7 @@ export default function MusicPlayer() {
   const [index, setIndex] = useState(0);
   const [trackIncrement, setTrackIncrement] = useState<number>(0);
   const [technicalMusicPlaying, setTechnicalMusicPlayState] = useState<boolean>(false);
+  const [technicalMusicType, setTechnicalMusicType] = useState<number>(-1);
   const [updatableMusic, setUpdatableMusic] = useState<boolean>(true);
   const tag = useRef<HTMLAudioElement>(null);
   const url = useRef<string>(MusicURLBase + MusicURL[0].URL);
@@ -29,7 +30,12 @@ export default function MusicPlayer() {
     if (!(player instanceof HTMLAudioElement)) return;
 
     if (media.action === "play" && player.networkState !== HTMLMediaElement.NETWORK_LOADING) {
-      player.play();
+      const playRequest = player.play();
+      if (playRequest !== undefined) {
+        playRequest.catch(e => {
+          console.error("mediaActions(): An error occurred while attempting to play music.\n" + e)
+        });
+      }
     }
     if (media.action === "pause") {
       player.pause();
@@ -55,13 +61,29 @@ export default function MusicPlayer() {
     }
   }
 
+  function updatePaused(p: boolean) {
+    const e = tag.current;
+    if (!(e instanceof HTMLAudioElement)) return;
+    p ??= false;
+    if (!p)
+      e.play().catch(e => console.log("updatePaused(): Failed to play music.\n" + e));
+    else
+      e.pause();
+  }
+
   function updateGrace(g: boolean) {
     const e = tag.current;
     if (!(e instanceof HTMLAudioElement)) return;
     if (g && (e.muted || e.volume === 0))
       e.pause();
-    else 
-      e.play();
+    else {
+      const playRequest = e.play();
+      if (playRequest !== undefined) {
+        playRequest.catch(e => {
+          console.error("updateGrace(): An error occurred while attempting to play music.\n" + e)
+        });
+      }
+    }
   }
 
   function updateLoop(l: boolean) {
@@ -97,8 +119,11 @@ export default function MusicPlayer() {
       chrome.runtime.onMessage.addListener(updateValues);
     }
 
-    function setDocumentTitle() {
-      document.title = MusicURL[index].Title;
+    function setDocumentTitle(id?: number) {
+      if (id)
+        document.title = MusicURL[id].Title;
+      else
+        document.title = MusicURL[index].Title;
     }
 
     function requestURL(increment: number): string {
@@ -125,8 +150,9 @@ export default function MusicPlayer() {
 
     function setTechnicalMusic(index: number) {
       const player = tag.current;
-      if (player instanceof HTMLAudioElement && !technicalMusicPlaying) {
+      if (player instanceof HTMLAudioElement && index !== technicalMusicType) {
         setTechnicalMusicPlayState(true);
+        setTechnicalMusicType(index);
         const mus = MusicURLSystem[index];
         document.title = mus.Title;
         url.current = MusicURLBase + mus.URL;
@@ -167,25 +193,30 @@ export default function MusicPlayer() {
         if (message.Type === Settings.Grace.Key) {
           updateGrace(message.Value as boolean);
         }
+
+        if (message.Type === Settings.Paused.Key) {
+          updatePaused(message.Value as boolean);
+        }
         
         if (message.Type === Settings.Track.Key) {
           updateTrack(message.Value as number ?? 0);
         }
+
         if (message.Type === Settings.Technical.Key && importedSettings.current.Technical.Value as boolean == true) {
           const value = message.Value as number;
           if (value >= 0) {
-            setTechnicalMusic(value ?? MusicTechnicalIds.Settings);
             setUpdatableMusic(true);
+            if (value !== technicalMusicType)
+              setTechnicalMusic(value ?? MusicTechnicalIds.Settings);
           }
           else if (updatableMusic) {
             setTechnicalMusicPlayState(false);
+            setTechnicalMusicType(value);
             setUpdatableMusic(false);
             updateTrack(index);
           }
         }
       }
-
-      updateGrace(importedSettings.current.Grace.Value as boolean);
 
       if (IsDev) {
         console.log(sender);
@@ -208,8 +239,10 @@ export default function MusicPlayer() {
         let track;
         if (typeof settings.Track.Value === "number")
           track = settings.Track.Value as number;
-        updateTrack(track ?? 0);
-        updateGrace(settings.Grace.Value as boolean);
+        track ??= index;
+        updateTrack(track);
+        setDocumentTitle(track);
+        updateGrace(settings.Grace.Value as boolean ?? true);
 
         if (!player.src)
           player.src = url.current;
@@ -219,8 +252,6 @@ export default function MusicPlayer() {
         player.muted = muted;
         player.volume = volume / 100;
         player.load();
-
-        setDocumentTitle();
 
         const msg: Message = { Type: Settings.Technical.Key };
         await chrome.runtime.sendMessage(msg);
@@ -256,6 +287,7 @@ export default function MusicPlayer() {
     loaded,
     index,
     technicalMusicPlaying,
+    technicalMusicType,
     trackIncrement,
     updatableMusic
   ]);
