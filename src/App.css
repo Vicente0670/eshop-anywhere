@@ -74,8 +74,9 @@
   scrollbar-color:
     var(--app-color-scrollbar-thumb) var(--app-color-scrollbar-track);
   scrollbar-width: thin;
-  /* please stop breaking my sticky elements */
-  overflow-y: clip;
+  /* With Chrome for Windows, overflow-y: clip still allows for an overflow to be visible. No sticky elements are destroyed. */
+  /* With Chromium for Linux (arch btw), overflow-y: auto || overflow-y: scroll works and does not break sticky elements. */
+  overflow-y: auto;
 
   .app-title {
     display: flex;
@@ -126,7 +127,7 @@
         display: flex;
 
         &>div {
-          flex: 1 0 0%;
+          flex: 1 1 0%;
           margin: auto;
           overflow: clip;
         }
@@ -135,24 +136,15 @@
           display: flex;
           align-items: center;
           /* my own solution makes me mad */
-          width: min(calc(var(--app-scale-root-width) / 2), 50vw);
+          width: clamp(calc(var(--app-scale-root-width) / 2), 50vw, 50vw);
 
-          .scroller {
-            position: relative;
-            display: flex;
-            width: 100%;
-            container: app-music-title-container / inline-size;
+          .name {
+            margin-left: 1rem;
+            text-wrap: nowrap;
+            word-break: keep-all;
 
-            .name {
-              margin-left: 1rem;
-              text-wrap: nowrap;
-              word-break: keep-all;
-            }
-          }
-
-          @container app-music-title-container (width >= calc(23rem / 2)) {
-            .name {
-              background: cyan;
+            &.wide {
+              background: magenta;
               animation: titleScroll 4s ease infinite;
             }
           }
@@ -173,13 +165,19 @@
           }
 
           &::after {
-            right: 50%;
+            left: calc(max(calc(var(--app-scale-root-width) / 2), 50vw) - 1rem);
             background: var(--app-color-music-title-fade-right);
           }
         }
 
         .data {
+          width: 50%;
           text-align: left;
+
+          &>p,
+          &>label {
+            padding-left: 1rem;
+          }
 
           .album {
             font-size: .75rem;
@@ -560,7 +558,7 @@
 
   95%,
   100% {
-    transform: translateX(calc(12ch - 100%));
+    transform: translateX(calc(max(calc(var(--app-scale-root-width) / 2), 50vw) - 2rem - 100%));
   }
 }
 

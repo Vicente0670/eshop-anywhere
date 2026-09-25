@@ -13,6 +13,19 @@ export default function App() {
   const musicTitle = useRef<HTMLHeadingElement>(null);
   const settingsEntries = Object.entries(Settings);
 
+  function musicTitleScroll() {
+    const target = musicTitle.current!;
+    const marginLeft = Number(getComputedStyle(target).marginLeft.replace("px", ""));
+    
+    const targetWidth = target.getBoundingClientRect().width + marginLeft * 2;
+    const windowWidth = document.body.getBoundingClientRect().width / 2; 
+    
+    if (targetWidth >= windowWidth)
+      target.classList.add("wide");
+    else
+      target.classList.remove("wide");
+  }
+
   function footerLogoPrompt(ev: React.UIEvent) {
     const target = ev.nativeEvent.target as HTMLElement;
     const offset = target.scrollTop;
@@ -59,8 +72,10 @@ export default function App() {
         Value: currentSettings.current,
       }
 
-      console.log(data);
-      console.log(Object.assign.call({}, entries));
+      if (IsDev) {
+        console.log(data);
+        console.log(Object.assign.call({}, entries));
+      }
 
       if (document.visibilityState === "hidden")
         chrome.runtime.sendMessage(data);
@@ -245,18 +260,15 @@ export default function App() {
 
   useEffect(() => {
     applyUserSettings();
+    musicTitleScroll();
+    window.addEventListener("resize", musicTitleScroll);
     document.addEventListener("visibilitychange", popupClose);
-    addEventListener("resize", () => {
-      console.log("STOP RESIZING ME!!!");
-    });
     chrome.runtime.onMessage.addListener(mediaUpdate);
 
     return () => {
+      window.addEventListener("resize", musicTitleScroll);
       document.removeEventListener("visibilitychange", popupClose);
       chrome.runtime.onMessage.removeListener(mediaUpdate);
-      addEventListener("resize", () => {
-        console.log("STOP RESIZING ME!!!");
-      });
     }
   });
 
@@ -273,7 +285,7 @@ export default function App() {
           <div className="metadata">
             <div className="title">
               <div className="scroller">
-                <h3 ref={musicTitle} className="name">Nintenod</h3>
+                <h3 ref={musicTitle} className="name">long song name long song name long song name </h3>
               </div>
             </div>
             <div className="data">
