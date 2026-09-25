@@ -10,6 +10,7 @@ export default function App() {
   const newSettings = useRef<Setting>(Object());
   const logo = useRef<HTMLElement>(null);
   const media = useRef<HTMLFieldSetElement>(null);
+  const musicTitle = useRef<HTMLHeadingElement>(null);
   const settingsEntries = Object.entries(Settings);
 
   function footerLogoPrompt(ev: React.UIEvent) {
@@ -245,11 +246,17 @@ export default function App() {
   useEffect(() => {
     applyUserSettings();
     document.addEventListener("visibilitychange", popupClose);
+    addEventListener("resize", () => {
+      console.log("STOP RESIZING ME!!!");
+    });
     chrome.runtime.onMessage.addListener(mediaUpdate);
 
     return () => {
       document.removeEventListener("visibilitychange", popupClose);
       chrome.runtime.onMessage.removeListener(mediaUpdate);
+      addEventListener("resize", () => {
+        console.log("STOP RESIZING ME!!!");
+      });
     }
   });
 
@@ -264,7 +271,11 @@ export default function App() {
       <form className="app-settings">
         <fieldset className="media" ref={media}>
           <div className="metadata">
-            <h3 className="title">Song Name</h3>
+            <div className="title">
+              <div className="scroller">
+                <h3 ref={musicTitle} className="name">Nintenod</h3>
+              </div>
+            </div>
             <div className="data">
               <p className="album">Album Name</p>
               <label

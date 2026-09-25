@@ -37,6 +37,8 @@
     #1d120b
   );
 
+  --app-scale-root-height: 33rem;
+  --app-scale-root-width: 23rem;
   --app-scale-h1: 2rem;
   --app-scale-h2: 1.25rem;
   --app-scale-h3: 1.125rem;
@@ -55,8 +57,8 @@
 }
 
 html, body {
-  height: max(34rem, 100%);
-  width: max(23rem, 100%);
+  height: max(var(--app-scale-root-height), 100%);
+  width: max(var(--app-scale-root-width), 100%);
   background: var(--app-color-bg-default);
 }
 

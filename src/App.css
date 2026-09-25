@@ -40,6 +40,13 @@
     inset 0 -.125rem .125rem #12121240,
     0 0 .25rem 0 #000;
 
+  --app-color-music-title-fade-left: linear-gradient(270deg,
+      transparent,
+      var(--app-color-main-title-bg));
+  --app-color-music-title-fade-right: linear-gradient(90deg,
+      transparent,
+      var(--app-color-main-title-bg));
+
   --app-color-slider-thumb-default: #ffe1d2;
   --app-color-slider-thumb-hover: #f9efe9;
   --app-color-slider-thumb-active: #f4b893;
@@ -67,7 +74,8 @@
   scrollbar-color:
     var(--app-color-scrollbar-thumb) var(--app-color-scrollbar-track);
   scrollbar-width: thin;
-  overflow-y: auto;
+  /* please stop breaking my sticky elements */
+  overflow-y: clip;
 
   .app-title {
     display: flex;
@@ -95,7 +103,7 @@
 
   .app-settings {
     height: auto;
-    width: 100%;
+    max-width: 100%;
 
     .media {
       display: flex;
@@ -104,7 +112,7 @@
       top: 0;
       left: 0;
       height: var(--app-scale-media-height);
-      width: 100%;
+      max-width: 100%;
       background: var(--app-color-main-title-bg);
       border: none;
       outline: none;
@@ -116,11 +124,63 @@
 
       .metadata {
         display: flex;
-        justify-content: center;
-        align-items: center;
-        text-align: center;
+
+        &>div {
+          flex: 1 0 0%;
+          margin: auto;
+          overflow: clip;
+        }
+
+        .title {
+          display: flex;
+          align-items: center;
+          /* my own solution makes me mad */
+          width: min(calc(var(--app-scale-root-width) / 2), 50vw);
+
+          .scroller {
+            position: relative;
+            display: flex;
+            width: 100%;
+            container: app-music-title-container / inline-size;
+
+            .name {
+              margin-left: 1rem;
+              text-wrap: nowrap;
+              word-break: keep-all;
+            }
+          }
+
+          @container app-music-title-container (width >= calc(23rem / 2)) {
+            .name {
+              background: cyan;
+              animation: titleScroll 4s ease infinite;
+            }
+          }
+
+          &::before,
+          &::after {
+            position: absolute;
+            top: 0;
+            height: calc(var(--app-scale-media-height) / 2);
+            width: 1rem;
+            z-index: 1;
+            content: "";
+          }
+
+          &::before {
+            left: 0;
+            background: var(--app-color-music-title-fade-left);
+          }
+
+          &::after {
+            right: 50%;
+            background: var(--app-color-music-title-fade-right);
+          }
+        }
 
         .data {
+          text-align: left;
+
           .album {
             font-size: .75rem;
           }
@@ -133,7 +193,7 @@
         align-items: center;
         justify-content: center;
         background: red;
-        
+
         button {
           aspect-ratio: 1;
           height: 1.33rem;
@@ -153,9 +213,7 @@
           width: min-content;
         }
 
-        .prev-container {
-          
-        }
+        .prev-container {}
 
         .progress-container {
           display: flex;
@@ -164,9 +222,7 @@
           height: auto;
         }
 
-        .next-container {
-
-        }
+        .next-container {}
 
       }
 
@@ -485,12 +541,26 @@
 }
 
 @keyframes musicPlayerSpawn {
+
   0% {
     height: 0rem;
   }
 
   100% {
     height: var(--app-scale-media-height);
+  }
+}
+
+@keyframes titleScroll {
+
+  0%,
+  20% {
+    transform: translateX(0%);
+  }
+
+  95%,
+  100% {
+    transform: translateX(calc(12ch - 100%));
   }
 }
 
@@ -519,6 +589,7 @@
 }
 
 @keyframes sliderThumbActive {
+
   0% {
     box-shadow:
       var(--app-color-slider-thumb-shadow-active),
