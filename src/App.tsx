@@ -142,7 +142,7 @@ export default function App() {
       Value: value,
       Event: ev.type,
     }
-    serviceSettingsReport();
+    await serviceSettingsReport();
     await chrome.runtime.sendMessage(msg);
   }
 
@@ -280,20 +280,6 @@ export default function App() {
     }
   }
 
-  function sendBgMsg() {
-    try {
-      const msg: Message = {
-        Type: ServiceCommands.Report,
-        Value: newSettings.current
-      }
-      service.current?.postMessage(msg);
-    }
-    catch (e: unknown) {
-      const err = e as chrome.runtime.LastError;
-      console.warn(err.message);
-    }
-  }
-
   useEffect(() => {
     applyUserSettings();
     musicTitleScroll();
@@ -341,7 +327,7 @@ export default function App() {
           </div>
           <div className="controls">
             <div className="media-container prev-container">
-              <button type="button" aria-label="Previous track" onClick={sendBgMsg} />
+              <button type="button" aria-label="Previous track" />
               <button type="button" aria-label="Go back 10 seconds" />
             </div>
             <div className="progress-container">

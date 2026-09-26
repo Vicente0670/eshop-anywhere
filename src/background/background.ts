@@ -211,23 +211,28 @@ async function syncSettings(port: chrome.runtime.Port) {
 
       if (m.Type === ServiceCommands.Report) {
         importedSettings = m.Value as Setting;
-        console.group("Popup Settings Modification Stats");
-        console.log(serviceName + " These are the imported settings.");
-        console.log(importedSettings);
-        console.groupEnd();
         port.postMessage(`${serviceName} Settings saved.`);
+
+        if (IsDev) {
+          console.group("Popup Settings Modification Stats");
+          console.log(serviceName + " These are the imported settings.");
+          console.log(importedSettings);
+          console.groupEnd();
+        }
       }
     });
 
     port.onDisconnect.addListener(async () => {
       console.log(`${serviceName} Port ${port.name} successfully closed.`);
       if (!importedSettings) return;
-
-      console.group("Popup Disconnected Stats");
-      console.log(serviceName + " These are the imported settings.");
-      console.log(importedSettings);
-      console.groupEnd();
-
+      
+      if (IsDev) {
+        console.group("Popup Disconnected Stats");
+        console.log(serviceName + " These are the imported settings.");
+        console.log(importedSettings);
+        console.groupEnd();
+      }
+      
       return await mutateSettings(importedSettings);
     });
   }
