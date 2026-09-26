@@ -114,28 +114,32 @@ export const ServiceCommands: { [K in Commands]: string } = {
 
 export const SettingNumberData: NumberFormat = {
   "settings-track": MusicURL,
-};
+}
 
 export const SettingNames: string[] = Object.keys(Settings);
 
 export const SettingQuery: string = "settings-query";
-export const AppMediaQuery: string = "settings-appmediaquery";
+
+type Commands = "Kill" | "Report";
 
 type NumberFormat = {
   [Id in SettingKeys]?: object[];
 }
 
+export type MediaContent = {
+  Index: number,
+  Paused: boolean,
+  Duration: number,
+  Timestamp: number
+}
+
 export type Setting = {
   [Setting in SettingIds]: SettingsLayout;
-};
+}
 
 export type SettingInfo = {
   [Setting in SettingIds]: SettingInfoLayout;
-}
-
-export type Commands =
-  "Kill" |
-  "Report";
+}  
 
 export type SettingIds =
   "Volume" |

@@ -4,12 +4,11 @@ import { SettingQuery, Settings, type MediaContent, type Setting } from "../Sett
 
 export default function MusicPlayer() {
   const [loaded, isLoaded] = useState(false);
-  const [index, setIndex] = useState(0);
-  const [trackIncrement, setTrackIncrement] = useState<number>(0);
   const [technicalMusicPlaying, setTechnicalMusicPlayState] = useState<boolean>(false);
   const [technicalMusicType, setTechnicalMusicType] = useState<number>(-1);
   const [updatableMusic, setUpdatableMusic] = useState<boolean>(true);
   const tag = useRef<HTMLAudioElement>(null);
+  const index = useRef<number>(0);
   const url = useRef<string>(MusicURLBase + MusicURL[0].URL);
   const importedSettings = useRef<Setting>(Settings);
 
@@ -54,6 +53,14 @@ export default function MusicPlayer() {
     e.volume = v / 100;
   }
 
+  function verifyIndex(n: number): number {
+    if (n >= MusicURL.length)
+      return 0;
+    if (n < 0)
+      return MusicURL.length - 1;
+    return n;
+  }
+
   // [ ######################## ]
 
 
@@ -68,7 +75,7 @@ export default function MusicPlayer() {
     if (!e || !(e instanceof HTMLAudioElement)) return;
 
     const msg: MediaContent = {
-      Index: index,
+      Index: index.current,
       Paused: e.paused,
       Duration: e.duration,
       Timestamp: e.currentTime,
@@ -87,38 +94,40 @@ export default function MusicPlayer() {
     await updateAppMedia();
   }, [updateAppMedia]);
 
+  const requestURL = useCallback((i: number): string => {
+    i = verifyIndex(i);
+    index.current = i;
+    document.title = MusicURL[i].Title;
+    return MusicURLBase + MusicURL[i].URL;
+  }, [index]);
+
   const updateTrack = useCallback(async (i: number) => {
     const e = tag.current;
     if (!(e instanceof HTMLAudioElement)) return;
-    e.src = MusicURLBase + MusicURL[i].URL;
-    setIndex(i);
+    e.src = requestURL(i);
     await updateAppMedia();
-  }, [updateAppMedia]);
+  }, [requestURL, updateAppMedia]);
 
   const mediaActions = useCallback(async (media: MediaSessionActionDetails) => {
     const player = tag.current;
     if (!(player instanceof HTMLAudioElement)) return;
 
     if (media.action === "play" && player.networkState !== HTMLMediaElement.NETWORK_LOADING) {
-      const playRequest = player.play();
-      if (playRequest != null) {
-        playRequest.catch(e => {
-          console.error("mediaActions(): An error occurred while attempting to play music.\n" + e)
-        });
-      }
+      const paused = false;
+      await updatePaused(paused);
     }
     if (media.action === "pause") {
       const paused = true;
       await updatePaused(paused);
     }
     if (media.action === "nexttrack") {
-      setTrackIncrement(1);
+      updateTrack(index.current + 1);
     }
     if (media.action === "previoustrack") {
       if (player.currentTime > 3)
         player.currentTime = 0;
       else
-        setTrackIncrement(-1);
+        updateTrack(index.current - 1);
     }
     if (media.action === "seekbackward") {
       player.currentTime -= 10;
@@ -127,10 +136,13 @@ export default function MusicPlayer() {
       player.currentTime += 10;
     }
 
-    if (IsDev) {
+    if (IsDev)
       console.info(`MusicPlayer.tsx: mediaActions() - Action: "${media.action}"`);
-    }
-  }, [updatePaused]);
+
+  }, [
+    updatePaused,
+    updateTrack
+  ]);
 
   // [ ################# ]
 
@@ -153,49 +165,35 @@ export default function MusicPlayer() {
       if (id)
         document.title = MusicURL[id].Title;
       else
-        document.title = MusicURL[index].Title;
-    }
-
-    function requestURL(increment: number): string {
-      let newIndex = index + increment;
-      if (newIndex >= MusicURL.length)
-        newIndex = 0;
-      if (newIndex < 0)
-        newIndex = MusicURL.length - 1;
-
-      setIndex(newIndex);
-      document.title = MusicURL[newIndex].Title;
-      return MusicURLBase + MusicURL[newIndex].URL;
+        document.title = MusicURL[index.current].Title;
     }
     
-    function queryTrack(increment: number) {
-      setTrackIncrement(0);
+    async function queryTrack(i: number) {
       const player = tag.current;
       if (player instanceof HTMLAudioElement) {
-        url.current = requestURL(increment);
-        player.src = url.current;
-        player.load();
+        await updateTrack(i);
       }
     }
 
-    function setTechnicalMusic(index: number) {
+    // might refactor this to work in tandem w/ updateTrack ??
+    async function setTechnicalMusic(i: number) {
       const player = tag.current;
-      if (player instanceof HTMLAudioElement && index !== technicalMusicType) {
+      if (player instanceof HTMLAudioElement && i !== technicalMusicType) {
         setTechnicalMusicPlayState(true);
-        setTechnicalMusicType(index);
-        const mus = MusicURLSystem[index];
+        setTechnicalMusicType(i);
+        const mus = MusicURLSystem[i];
         document.title = mus.Title;
         url.current = MusicURLBase + mus.URL;
         player.src = url.current;
         player.loop = true;
         player.load();
+        await updateAppMedia();
       }
     }
 
     function nextSongEvent(ev: Event) {
-      const increment = 1;
       if (ev.target instanceof HTMLAudioElement && ev.type === "ended")
-        queryTrack(increment);
+        queryTrack(index.current + 1);
     }
 
     async function updateValues(
@@ -243,7 +241,7 @@ export default function MusicPlayer() {
             setTechnicalMusicPlayState(false);
             setTechnicalMusicType(value);
             setUpdatableMusic(false);
-            await updateTrack(index);
+            await updateTrack(index.current);
           }
         }
       }
@@ -271,7 +269,7 @@ export default function MusicPlayer() {
         let track;
         if (typeof settings.Track.Value === "number")
           track = settings.Track.Value as number;
-        track ??= index;
+        track ??= index.current;
         await updateTrack(track);
         setDocumentTitle(track);
         updateGrace(settings.Grace.Value as boolean ?? true);
@@ -300,12 +298,8 @@ export default function MusicPlayer() {
       return;
     }
 
-    if (!loaded && index == 0) {
+    if (!loaded && index.current == 0) {
       initialize();
-    }
-
-    if (trackIncrement !== 0) {
-      queryTrack(trackIncrement);
     }
 
     return () => {
@@ -320,11 +314,11 @@ export default function MusicPlayer() {
     index,
     technicalMusicPlaying,
     technicalMusicType,
-    trackIncrement,
     updatableMusic,
     updateTrack,
     updateAppMedia,
     updatePaused,
+    requestURL,
     mediaActions
   ]);
 
@@ -332,7 +326,14 @@ export default function MusicPlayer() {
 
   return (
     <div id={containerId}>
-      <audio id={audioId} autoPlay ref={tag} muted={false}></audio>
+      <audio
+        autoPlay
+        ref={tag}
+        id={audioId}
+        muted={false}
+        onPlay={updateAppMedia}
+        onPause={updateAppMedia}
+      />
     </div>
   );
 }

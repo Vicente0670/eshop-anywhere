@@ -1,17 +1,25 @@
 import "./App.css";
 import { useEffect, useRef } from "react";
-import { AppSettingsPort, Brand, IsDev, LogoMinAppearanceHeight, type Message, type MusicContainer } from "./Constants.ts";
-import { Settings, type SettingsLayout, type Setting, SettingQuery, verifySettings, SettingDescriptions, type SettingIds, SettingNumberData, type SettingKeys, AppMediaQuery, ServiceCommands } from "./Settings.ts";
+import { AppSettingsPort, Brand, IsDev, LogoMinAppearanceHeight, MusicURL, type Message, type MusicContainer } from "./Constants.ts";
+import { Settings, type SettingsLayout, type Setting, SettingQuery, verifySettings, SettingDescriptions, type SettingIds, SettingNumberData, type SettingKeys, ServiceCommands, type MediaContent } from "./Settings.ts";
 import Tooltip from "./components/Tooltip.tsx";
+import { setMilliseconds, setSeconds, setMinutes } from "./Time.ts";
 
 export default function App() {
+  const service = useRef<chrome.runtime.Port>(null);
   const settingsRefs = useRef<HTMLLabelElement[]>([]);
   const currentSettings = useRef<Setting>(Settings);
   const newSettings = useRef<Setting>(Object());
   const logo = useRef<HTMLElement>(null);
   const media = useRef<HTMLFieldSetElement>(null);
+  
   const musicTitle = useRef<HTMLHeadingElement>(null);
-  const service = useRef<chrome.runtime.Port>(null);
+  const musicAlbum = useRef<HTMLParagraphElement>(null);
+  const musicTimestamp = useRef<HTMLSpanElement>(null);
+  const musicDuration = useRef<HTMLSpanElement>(null);
+
+  const numericDuration = useRef<number>(0);
+  const isMusicPaused = useRef<boolean>(false);
 
   const settingsEntries = Object.entries(Settings);
 
@@ -41,20 +49,58 @@ export default function App() {
       output.classList.remove("open");
   }
 
-  async function mediaUpdate(
-    message: Message,
+  function updateTime(timestamp: number) {
+    if (!musicTimestamp.current || !musicDuration.current || numericDuration.current == null) return;
+    if (timestamp > numericDuration.current) return requestAnimationFrame(() => updateTime(0));
+    if (isMusicPaused.current) return;
+    const start = performance.now();
+
+    const timeElapsed: string = `${setMinutes(timestamp)}:${setSeconds(timestamp)}.${setMilliseconds(timestamp)}`;
+    musicTimestamp.current.textContent = timeElapsed;
+
+    requestAnimationFrame(() => updateTime(timestamp + ((performance.now() - start) / 1000)));
+  }
+
+  function updatePaused(p?: boolean) {
+    if (p)
+      isMusicPaused.current = true;
+    else
+      isMusicPaused.current = false;
+  }
+
+  async function updateMedia(
+    msg: MediaContent,
     sender: chrome.runtime.MessageSender,
     sendResponse: (response: boolean) => void
   ) {
-    if (message.Type === AppMediaQuery && message.Event === "change") {
-      console.group(mediaUpdate.name);
-      console.log(message);
-      console.groupEnd();
-    }
+    console.error(msg);
+    const name = musicTitle.current;
+    const album = musicAlbum.current;
+    const time = musicTimestamp.current;
+    const dur = musicDuration.current;
+
+    if (!name || !album || !time || !dur) return;
+
+    const albums: string = MusicURL[msg.Index].Console.toString();
+    const timestamp: number = msg.Timestamp;
+    const duration: number = msg.Duration;
+
+    const timeElapsed: string = `${setMinutes(timestamp)}:${setSeconds(timestamp)}.${setMilliseconds(timestamp)}`;
+    const totalTime: string = `${setMinutes(duration)}:${setSeconds(duration)}.${setMilliseconds(duration)}`;
+
+    name.textContent  = MusicURL[msg.Index].Title;
+    album.textContent = albums;
+    time.textContent  = timeElapsed;
+    dur.textContent   = totalTime;
+
+    numericDuration.current = duration;
+    updatePaused(msg.Paused);
+    updateTime(timestamp);
+    musicTitleScroll();
 
     if (IsDev) {
-      console.group(mediaUpdate.name);
-      console.log(message, sender, sendResponse);
+      console.group(updateMedia.name);
+      console.log(msg, sender, sendResponse);
       console.groupEnd();
     }
   }
@@ -284,15 +330,17 @@ export default function App() {
     applyUserSettings();
     musicTitleScroll();
     window.addEventListener("resize", musicTitleScroll);
-    chrome.runtime.onMessage.addListener(mediaUpdate);
-
+    chrome.runtime.onMessage.addListener(updateMedia);
+    
     service.current = chrome.runtime.connect({ name: AppSettingsPort });
     service.current.onMessage.addListener(serviceReceiveStatus);
     service.current.onDisconnect.addListener(popupClose);
+    
+    chrome.runtime.sendMessage({ Type: null });
 
     return () => {
       window.addEventListener("resize", musicTitleScroll);
-      chrome.runtime.onMessage.removeListener(mediaUpdate);
+      chrome.runtime.onMessage.removeListener(updateMedia);
       service.current?.onMessage.removeListener(serviceReceiveStatus);
       service.current?.disconnect();
     }
@@ -311,17 +359,17 @@ export default function App() {
           <div className="metadata">
             <div className="title">
               <div className="scroller">
-                <h3 ref={musicTitle} className="name">________________</h3>
+                <h3 ref={musicTitle} className="name">Nothing playing...</h3>
               </div>
             </div>
             <div className="data">
-              <p className="album">Album Name</p>
+              <p className="album" ref={musicAlbum}>No album</p>
               <label
                 htmlFor="music-progress"
                 className="progress-label"
               >
-                <span id="music-progress-current-time">00:00</span>/
-                <span id="music-progress-full-time">00:01</span>
+                <span id="music-progress-current-time" ref={musicTimestamp}>00:00</span>/
+                <span id="music-progress-full-time" ref={musicDuration}>00:00</span>
               </label>
             </div>
           </div>
