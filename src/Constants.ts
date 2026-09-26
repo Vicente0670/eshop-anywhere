@@ -205,6 +205,8 @@ export const RatingPaths: string[] = [
 
 export const LogoMinAppearanceHeight = 16 * 5;
 
+export const AppSettingsPort = "app-settings-port-name";
+
 export interface Message {
   Type: string,
   Value?: Setting | number | boolean,

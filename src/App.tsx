@@ -1,7 +1,7 @@
 import "./App.css";
 import { useEffect, useRef } from "react";
-import { Brand, IsDev, LogoMinAppearanceHeight, type Message, type MusicContainer } from "./Constants.ts";
-import { Settings, type SettingsLayout, type Setting, SettingQuery, verifySettings, SettingDescriptions, type SettingIds, SettingNumberData, type SettingKeys, AppMediaQuery } from "./Settings.ts";
+import { AppSettingsPort, Brand, IsDev, LogoMinAppearanceHeight, type Message, type MusicContainer } from "./Constants.ts";
+import { Settings, type SettingsLayout, type Setting, SettingQuery, verifySettings, SettingDescriptions, type SettingIds, SettingNumberData, type SettingKeys, AppMediaQuery, ServiceCommands } from "./Settings.ts";
 import Tooltip from "./components/Tooltip.tsx";
 
 export default function App() {
@@ -11,6 +11,8 @@ export default function App() {
   const logo = useRef<HTMLElement>(null);
   const media = useRef<HTMLFieldSetElement>(null);
   const musicTitle = useRef<HTMLHeadingElement>(null);
+  const service = useRef<chrome.runtime.Port>(null);
+
   const settingsEntries = Object.entries(Settings);
 
   function musicTitleScroll() {
@@ -57,35 +59,55 @@ export default function App() {
     }
   }
 
-  function popupClose(ev: Event) {
-    const entries = Object.entries(newSettings.current);
+  function serviceReceiveStatus(msg: string) {
+    console.log(msg);
+  }
 
-    if (entries.length) {
+  function hasEditedSettings(): boolean {
+    return Object.entries(newSettings.current).length > 0;
+  }
+
+  function getNewSettings(): Setting | null {
+
+    if (hasEditedSettings()) {
+      const entries = Object.entries(newSettings.current);
 
       entries.forEach(([Name, Prop]) => {
         const settingName = Name as keyof Setting;
         currentSettings.current[settingName].Value = Prop.Value;
       });
 
-      const data: Message = {
-        Type: SettingQuery,
-        Value: currentSettings.current,
-      }
-
       if (IsDev) {
-        console.log(data);
+        console.log();
         console.log(Object.assign.call({}, entries));
       }
+      return currentSettings.current;
+    }
+    return null;
+  }
 
-      if (document.visibilityState === "hidden")
-        chrome.runtime.sendMessage(data);
+  async function serviceSettingsReport() {
+    const batch = getNewSettings();
+    if (!batch) return;
+
+    const msg: Message = {
+      Type: ServiceCommands.Report,
+      Value: batch
     }
-    if (IsDev) {
-      console.group();
-      console.info("Visibility of App.tsx has been mutated. Event message is displayed below.");
-      console.info(ev);
-      console.groupEnd();
+    service.current?.postMessage(msg);
+  }
+
+  async function popupClose(p: chrome.runtime.Port) {
+    
+    if (hasEditedSettings()) {
+      const data: Message = {
+        Type: SettingQuery,
+        Value: getNewSettings() as Setting,
+      }
+      await chrome.runtime.sendMessage(data);
     }
+
+    console.log(`${popupClose.name}() - Port ${p.name} successfully closed.`);
   }
 
   async function inputUpdate(ev: Event) {
@@ -103,7 +125,6 @@ export default function App() {
       value = select.selectedIndex;
     }
     else {
-      console.log(ev.type);
       value = target.checked;
       output.textContent = value ? "ON" : "OFF";
     }
@@ -121,6 +142,7 @@ export default function App() {
       Value: value,
       Event: ev.type,
     }
+    serviceSettingsReport();
     await chrome.runtime.sendMessage(msg);
   }
 
@@ -258,17 +280,35 @@ export default function App() {
     }
   }
 
+  function sendBgMsg() {
+    try {
+      const msg: Message = {
+        Type: ServiceCommands.Report,
+        Value: newSettings.current
+      }
+      service.current?.postMessage(msg);
+    }
+    catch (e: unknown) {
+      const err = e as chrome.runtime.LastError;
+      console.warn(err.message);
+    }
+  }
+
   useEffect(() => {
     applyUserSettings();
     musicTitleScroll();
     window.addEventListener("resize", musicTitleScroll);
-    document.addEventListener("visibilitychange", popupClose);
     chrome.runtime.onMessage.addListener(mediaUpdate);
+
+    service.current = chrome.runtime.connect({ name: AppSettingsPort });
+    service.current.onMessage.addListener(serviceReceiveStatus);
+    service.current.onDisconnect.addListener(popupClose);
 
     return () => {
       window.addEventListener("resize", musicTitleScroll);
-      document.removeEventListener("visibilitychange", popupClose);
       chrome.runtime.onMessage.removeListener(mediaUpdate);
+      service.current?.onMessage.removeListener(serviceReceiveStatus);
+      service.current?.disconnect();
     }
   });
 
@@ -285,7 +325,7 @@ export default function App() {
           <div className="metadata">
             <div className="title">
               <div className="scroller">
-                <h3 ref={musicTitle} className="name">long song name long song name long song name </h3>
+                <h3 ref={musicTitle} className="name">________________</h3>
               </div>
             </div>
             <div className="data">
@@ -301,7 +341,7 @@ export default function App() {
           </div>
           <div className="controls">
             <div className="media-container prev-container">
-              <button type="button" aria-label="Previous track" />
+              <button type="button" aria-label="Previous track" onClick={sendBgMsg} />
               <button type="button" aria-label="Go back 10 seconds" />
             </div>
             <div className="progress-container">

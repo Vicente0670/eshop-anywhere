@@ -107,6 +107,11 @@ export const SettingDescriptions: SettingInfo = {
   }
 }
 
+export const ServiceCommands: { [K in Commands]: string } = {
+  Kill: "kill",
+  Report: "report",
+}
+
 export const SettingNumberData: NumberFormat = {
   "settings-track": MusicURL,
 };
@@ -127,6 +132,10 @@ export type Setting = {
 export type SettingInfo = {
   [Setting in SettingIds]: SettingInfoLayout;
 }
+
+export type Commands =
+  "Kill" |
+  "Report";
 
 export type SettingIds =
   "Volume" |

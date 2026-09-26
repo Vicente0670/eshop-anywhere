@@ -1,5 +1,5 @@
-import { IsDev, Keys, MusicTechnicalIds, PurchasePaths, RatingPaths, SettingsPaths, Websites, WishlistPaths, type Message } from "../Constants.ts";
-import { SettingQuery, Settings, verifySettings, type Setting, type SettingIds } from "../Settings.ts";
+import { AppSettingsPort, IsDev, Keys, MusicTechnicalIds, PurchasePaths, RatingPaths, SettingsPaths, Websites, WishlistPaths, type Message } from "../Constants.ts";
+import { ServiceCommands, SettingQuery, Settings, verifySettings, type Setting, type SettingIds } from "../Settings.ts";
 
 const tabQueryOptions: chrome.tabs.QueryInfo = {
   windowType: "normal",
@@ -10,12 +10,11 @@ function delimiter(str: string): string {
   return str + "() - ";
 }
 
-
 async function auditTechnicalPage() {
   
   function tabExists(t: chrome.tabs.Tab[]): boolean {
     const tab = t.find(e => e.active);
-    return (t.length === 1) || (tab !== undefined && tab !== null);
+    return t.length === 1 || tab != null;
   }
 
   const msg: Message = {
@@ -124,12 +123,17 @@ async function auditTabChange() {
   return true;
 }
 
-async function querySettings(
+async function queryOptions(
   message: Message,
   sender: chrome.runtime.MessageSender,
   sendResponse: (response: Setting) => void
 ) {
-  const functionName = delimiter(querySettings.name);
+  const functionName = delimiter(queryOptions.name);
+
+  if (message.Type === "yo") {
+    console.warn("bro why is this even a thing that can happen");
+    return;
+  }
 
   if (IsDev) {
     console.group();
@@ -153,18 +157,8 @@ async function querySettings(
 
   if (message.Type === SettingQuery) {
 
-    if (message.Value) {
-
-      const obj = message.Value as Setting;
-      Object.entries(obj).forEach(([key, prop]) => {
-        if (prop.Value === null || prop.Value === undefined) {
-          const k = key as SettingIds;
-          obj[k].Value = Settings[k].Value;
-        }
-      });
-
-      return await chrome.storage.sync.set(obj);
-    }
+    if (message.Value)
+      return await mutateSettings(message.Value as Setting);
 
     let storage: Setting = await chrome.storage.sync.get(null);
 
@@ -184,10 +178,66 @@ async function querySettings(
   return true;
 }
 
+async function mutateSettings(setting: Setting): Promise<unknown> {
+  importedSettings = null; // resets only in this context to prevent persistent data (avoids mutating settings that could inflate chrome.storage usage rates)
+  if (!setting) return;
+
+  Object.entries(setting).forEach(([key, prop]) => {
+    if (prop.Value === null || prop.Value === undefined) {
+      const k = key as SettingIds;
+      setting[k].Value = Settings[k].Value;
+    }
+  });
+
+  return await chrome.storage.sync.set(setting);
+}
+
+let importedSettings: Setting | null = null;
+
+async function syncSettings(port: chrome.runtime.Port) {
+  const serviceName = delimiter(syncSettings.name);
+
+  if (port.name === AppSettingsPort) {
+
+    console.log(`${serviceName} Port ${port.name} connected.`);
+
+    port.onMessage.addListener((m: Message) => {
+
+      if (m.Type === ServiceCommands.Kill) {
+        port.postMessage(`${serviceName} Killing ${serviceName} service worker.`);
+        port.disconnect();
+        return;
+      }
+
+      if (m.Type === ServiceCommands.Report) {
+        importedSettings = m.Value as Setting;
+        console.group("Popup Settings Modification Stats");
+        console.log(serviceName + " These are the imported settings.");
+        console.log(importedSettings);
+        console.groupEnd();
+        port.postMessage(`${serviceName} Settings saved.`);
+      }
+    });
+
+    port.onDisconnect.addListener(async () => {
+      console.log(`${serviceName} Port ${port.name} successfully closed.`);
+      if (!importedSettings) return;
+
+      console.group("Popup Disconnected Stats");
+      console.log(serviceName + " These are the imported settings.");
+      console.log(importedSettings);
+      console.groupEnd();
+
+      return await mutateSettings(importedSettings);
+    });
+  }
+}
+
 
 chrome.tabs.onUpdated.addListener(auditTabUpdate);
 chrome.tabs.onActivated.addListener(auditTabChange);
 chrome.runtime.onStartup.addListener(auditTabChange);
 chrome.runtime.onInstalled.addListener(auditTabChange);
 
-chrome.runtime.onMessage.addListener(querySettings);
+chrome.runtime.onMessage.addListener(queryOptions);
+chrome.runtime.onConnect.addListener(syncSettings);

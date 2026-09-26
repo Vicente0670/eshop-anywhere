@@ -136,7 +136,8 @@
           display: flex;
           align-items: center;
           /* my own solution makes me mad */
-          width: clamp(calc(var(--app-scale-root-width) / 2), 50vw, 50vw);
+          /* The extra -1rem might not be needed, and could break styling on Chrome for Windows. */
+          width: min(calc((var(--app-scale-root-width) / 2) - 1rem), 50vw);
 
           .name {
             margin-left: 1rem;
@@ -144,7 +145,7 @@
             word-break: keep-all;
 
             &.wide {
-              background: magenta;
+              /* background: magenta; */
               animation: titleScroll 4s ease infinite;
             }
           }
@@ -432,7 +433,7 @@
       width: max-content;
       background: var(--app-color-bg-3);
       transition: transform .3s ease, filter .3s ease;
-      transform: translate(-55vw, 0%);
+      transform: translate(calc(-100% - 2rem), 0%);
       filter: brightness(0.3);
       z-index: -1;
 
