@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { MusicURLBase, MusicURL, type Message, IsDev, MusicURLSystem, MusicTechnicalIds } from "../Constants.ts";
-import { AppMediaQuery, SettingQuery, Settings, type Setting } from "../Settings.ts";
+import { SettingQuery, Settings, type MediaContent, type Setting } from "../Settings.ts";
 
 export default function MusicPlayer() {
   const [loaded, isLoaded] = useState(false);
@@ -16,60 +16,10 @@ export default function MusicPlayer() {
   const audioId = "app-audio-player";
   const containerId = "app-audio-container";
 
-  async function updateAppMedia() {
-    const msg: Message = {
-      Type: AppMediaQuery,
-      Value: index ?? 0,
-      Event: "change"
-    };
-    return await chrome.runtime.sendMessage(msg);
-  }
 
-  function mediaActions(media: MediaSessionActionDetails) {
-    const player = tag.current;
-    if (!(player instanceof HTMLAudioElement)) return;
 
-    if (media.action === "play" && player.networkState !== HTMLMediaElement.NETWORK_LOADING) {
-      const playRequest = player.play();
-      if (playRequest !== undefined) {
-        playRequest.catch(e => {
-          console.error("mediaActions(): An error occurred while attempting to play music.\n" + e)
-        });
-      }
-    }
-    if (media.action === "pause") {
-      player.pause();
-    }
-    if (media.action === "nexttrack") {
-      setTrackIncrement(1);
-    }
-    if (media.action === "previoustrack") {
-      if (player.currentTime > 3)
-        player.currentTime = 0;
-      else
-        setTrackIncrement(-1);
-    }
-    if (media.action === "seekbackward") {
-      player.currentTime -= 10;
-    }
-    if (media.action === "seekforward") {
-      player.currentTime += 10;
-    }
 
-    if (IsDev) {
-      console.info(`MusicPlayer.tsx: mediaActions() - Action: "${media.action}"`);
-    }
-  }
-
-  function updatePaused(p: boolean) {
-    const e = tag.current;
-    if (!(e instanceof HTMLAudioElement)) return;
-    p ??= false;
-    if (!p)
-      e.play().catch(e => console.log("updatePaused(): Failed to play music.\n" + e));
-    else
-      e.pause();
-  }
+  // [ ### Non-dependencies ### ]
 
   function updateGrace(g: boolean) {
     const e = tag.current;
@@ -98,18 +48,98 @@ export default function MusicPlayer() {
     e.muted = m;
   }
 
-  function updateTrack(i: number) {
-    const e = tag.current;
-    if (!(e instanceof HTMLAudioElement)) return;
-    e.src = MusicURLBase + MusicURL[i].URL;
-    setIndex(i);
-  }
-
   function updateVolume(v: number) {
     const e = tag.current;
     if (!(e instanceof HTMLAudioElement)) return;
     e.volume = v / 100;
   }
+
+  // [ ######################## ]
+
+
+
+
+
+
+  // [ ### Callbacks ### ]
+
+  const updateAppMedia = useCallback(async () => {
+    const e = tag.current;
+    if (!e || !(e instanceof HTMLAudioElement)) return;
+
+    const msg: MediaContent = {
+      Index: index,
+      Paused: e.paused,
+      Duration: e.duration,
+      Timestamp: e.currentTime,
+    };
+    return await chrome.runtime.sendMessage(msg);
+  }, [index]);
+
+  const updatePaused = useCallback(async (p: boolean) => {
+    const e = tag.current;
+    if (!(e instanceof HTMLAudioElement)) return;
+    p ??= false;
+    if (!p)
+      e.play().catch(e => console.log("updatePaused(): Failed to play music.\n" + e));
+    else
+      e.pause();
+    await updateAppMedia();
+  }, [updateAppMedia]);
+
+  const updateTrack = useCallback(async (i: number) => {
+    const e = tag.current;
+    if (!(e instanceof HTMLAudioElement)) return;
+    e.src = MusicURLBase + MusicURL[i].URL;
+    setIndex(i);
+    await updateAppMedia();
+  }, [updateAppMedia]);
+
+  const mediaActions = useCallback(async (media: MediaSessionActionDetails) => {
+    const player = tag.current;
+    if (!(player instanceof HTMLAudioElement)) return;
+
+    if (media.action === "play" && player.networkState !== HTMLMediaElement.NETWORK_LOADING) {
+      const playRequest = player.play();
+      if (playRequest != null) {
+        playRequest.catch(e => {
+          console.error("mediaActions(): An error occurred while attempting to play music.\n" + e)
+        });
+      }
+    }
+    if (media.action === "pause") {
+      const paused = true;
+      await updatePaused(paused);
+    }
+    if (media.action === "nexttrack") {
+      setTrackIncrement(1);
+    }
+    if (media.action === "previoustrack") {
+      if (player.currentTime > 3)
+        player.currentTime = 0;
+      else
+        setTrackIncrement(-1);
+    }
+    if (media.action === "seekbackward") {
+      player.currentTime -= 10;
+    }
+    if (media.action === "seekforward") {
+      player.currentTime += 10;
+    }
+
+    if (IsDev) {
+      console.info(`MusicPlayer.tsx: mediaActions() - Action: "${media.action}"`);
+    }
+  }, [updatePaused]);
+
+  // [ ################# ]
+
+
+
+
+
+
+  // [ ### Use Effect ### ]
 
   useEffect(() => {
     const player = tag.current;
@@ -199,7 +229,7 @@ export default function MusicPlayer() {
         }
         
         if (message.Type === Settings.Track.Key) {
-          updateTrack(message.Value as number ?? 0);
+          await updateTrack(message.Value as number ?? 0);
         }
 
         if (message.Type === Settings.Technical.Key && importedSettings.current.Technical.Value as boolean == true) {
@@ -213,10 +243,12 @@ export default function MusicPlayer() {
             setTechnicalMusicPlayState(false);
             setTechnicalMusicType(value);
             setUpdatableMusic(false);
-            updateTrack(index);
+            await updateTrack(index);
           }
         }
       }
+
+      updateAppMedia();
 
       if (IsDev) {
         console.log(sender);
@@ -240,7 +272,7 @@ export default function MusicPlayer() {
         if (typeof settings.Track.Value === "number")
           track = settings.Track.Value as number;
         track ??= index;
-        updateTrack(track);
+        await updateTrack(track);
         setDocumentTitle(track);
         updateGrace(settings.Grace.Value as boolean ?? true);
 
@@ -289,8 +321,14 @@ export default function MusicPlayer() {
     technicalMusicPlaying,
     technicalMusicType,
     trackIncrement,
-    updatableMusic
+    updatableMusic,
+    updateTrack,
+    updateAppMedia,
+    updatePaused,
+    mediaActions
   ]);
+
+  // [ ################## ]
 
   return (
     <div id={containerId}>
