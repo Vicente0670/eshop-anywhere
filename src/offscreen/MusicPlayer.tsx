@@ -4,13 +4,13 @@ import { SettingQuery, Settings, type MediaContent, type Setting } from "../Sett
 
 export default function MusicPlayer() {
   const [loaded, isLoaded] = useState(false);
-  const [technicalMusicPlaying, setTechnicalMusicPlayState] = useState<boolean>(false);
   const [technicalMusicType, setTechnicalMusicType] = useState<number>(-1);
   const [updatableMusic, setUpdatableMusic] = useState<boolean>(true);
-  const tag = useRef<HTMLAudioElement>(null);
-  const index = useRef<number>(0);
-  const url = useRef<string>(MusicURLBase + MusicURL[0].URL);
+  const technicalMusicPlaying = useRef<boolean>(false);
   const importedSettings = useRef<Setting>(Settings);
+  const index = useRef<number>(0);
+  const tag = useRef<HTMLAudioElement>(null);
+  const url = useRef<string>(MusicURLBase + MusicURL[0].URL);
 
   const audioId = "app-audio-player";
   const containerId = "app-audio-container";
@@ -74,14 +74,24 @@ export default function MusicPlayer() {
     const e = tag.current;
     if (!e || !(e instanceof HTMLAudioElement)) return;
 
+    let finalIndex: number;
+
+    if (technicalMusicPlaying.current)
+      finalIndex = technicalMusicType;
+    else
+      finalIndex = index.current;
+
     const msg: MediaContent = {
-      Index: index.current,
+      Index: finalIndex,
       Paused: e.paused,
       Duration: e.duration,
       Timestamp: e.currentTime,
+      Technical: technicalMusicPlaying.current
     };
     return await chrome.runtime.sendMessage(msg);
-  }, [index]);
+  }, [
+    technicalMusicType
+  ]);
 
   const updatePaused = useCallback(async (p: boolean) => {
     const e = tag.current;
@@ -179,7 +189,7 @@ export default function MusicPlayer() {
     async function setTechnicalMusic(i: number) {
       const player = tag.current;
       if (player instanceof HTMLAudioElement && i !== technicalMusicType) {
-        setTechnicalMusicPlayState(true);
+        technicalMusicPlaying.current = true;
         setTechnicalMusicType(i);
         const mus = MusicURLSystem[i];
         document.title = mus.Title;
@@ -238,7 +248,7 @@ export default function MusicPlayer() {
               setTechnicalMusic(value ?? MusicTechnicalIds.Settings);
           }
           else if (updatableMusic) {
-            setTechnicalMusicPlayState(false);
+            technicalMusicPlaying.current = false;
             setTechnicalMusicType(value);
             setUpdatableMusic(false);
             await updateTrack(index.current);

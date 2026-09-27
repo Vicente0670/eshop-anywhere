@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" xmlns:bx="https://boxy-svg.com">
+  <defs>
+    <bx:export>
+      <bx:file format="svg" href="#object-0" path="triangle-r.svg" normalization="{&quot;removeBoxySVGMetadata&quot;:true,&quot;removeForeignMetadata&quot;:true,&quot;removeAnimations&quot;:true}"/>
+    </bx:export>
+  </defs>
+  <path d="M -256 -512 L 0 0 L -512 0 L -256 -512 Z" bx:shape="triangle -512 -512 512 512 0.5 0 1@35ef67e4" style="fill: rgb(255, 255, 255); stroke: rgb(0, 0, 0); stroke-width: 0px; transform-box: fill-box; transform-origin: 50% 50%;" transform="matrix(0, -1, 1, 0, 512, 512)" id="object-0"/>
+</svg>

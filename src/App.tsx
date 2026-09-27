@@ -1,6 +1,6 @@
 import "./App.css";
 import { useEffect, useRef } from "react";
-import { AppSettingsPort, Brand, IsDev, LogoMinAppearanceHeight, MusicURL, type Message, type MusicContainer } from "./Constants.ts";
+import { AppSettingsPort, Brand, IsDev, LogoMinAppearanceHeight, MusicURL, MusicURLSystem, type Message, type MusicContainer } from "./Constants.ts";
 import { Settings, type SettingsLayout, type Setting, SettingQuery, verifySettings, SettingDescriptions, type SettingIds, SettingNumberData, type SettingKeys, ServiceCommands, type MediaContent } from "./Settings.ts";
 import Tooltip from "./components/Tooltip.tsx";
 import { setMilliseconds, setSeconds, setMinutes } from "./Time.ts";
@@ -73,7 +73,6 @@ export default function App() {
     sender: chrome.runtime.MessageSender,
     sendResponse: (response: boolean) => void
   ) {
-    console.error(msg);
     const name = musicTitle.current;
     const album = musicAlbum.current;
     const time = musicTimestamp.current;
@@ -81,14 +80,21 @@ export default function App() {
 
     if (!name || !album || !time || !dur) return;
 
-    const albums: string = MusicURL[msg.Index].Console.toString();
+    let content: MusicContainer;
+
+    if (msg.Technical)  
+      content = MusicURLSystem[msg.Index];
+    else
+      content = MusicURL[msg.Index];
+
+    const albums: string = content.Console.toString();
     const timestamp: number = msg.Timestamp;
     const duration: number = msg.Duration;
 
     const timeElapsed: string = `${setMinutes(timestamp)}:${setSeconds(timestamp)}.${setMilliseconds(timestamp)}`;
     const totalTime: string = `${setMinutes(duration)}:${setSeconds(duration)}.${setMilliseconds(duration)}`;
 
-    name.textContent  = MusicURL[msg.Index].Title;
+    name.textContent  = content.Title;
     album.textContent = albums;
     time.textContent  = timeElapsed;
     dur.textContent   = totalTime;
@@ -374,24 +380,22 @@ export default function App() {
             </div>
           </div>
           <div className="controls">
-            <div className="media-container prev-container">
-              <button type="button" aria-label="Previous track" />
-              <button type="button" aria-label="Go back 10 seconds" />
+            <div className="media-container">
+              <button type="button" className="btn-prev" aria-label="Previous track" />
+              <button type="button" className="btn-prev-10" aria-label="Go back 10 seconds" />
+              <button type="button" className="btn-control" aria-label="Play/Pause" />
+              <button type="button" className="btn-next-10" aria-label="Skip 10 seconds" />
+              <button type="button" className="btn-next" aria-label="Next track" />
             </div>
             <div className="progress-container">
               <input
                 type="range"
                 className="progress"
-                id="music-progress"
                 name="music-progress"
                 min={0}
                 max={100}
                 step={1 / 20}
               />
-            </div>
-            <div className="media-container next-container">
-              <button type="button" aria-label="Skip 10 seconds" />
-              <button type="button" aria-label="Next track" />
             </div>
           </div>
         </fieldset>

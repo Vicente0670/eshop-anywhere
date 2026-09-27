@@ -1,5 +1,7 @@
 import { isArrayEqual, MusicURL } from "./Constants";
 
+// Extension works from Chrome v109+ (due to offscreen).
+
 // Default
 export const Settings: Setting = {
   Volume: {
@@ -130,7 +132,8 @@ export type MediaContent = {
   Index: number,
   Paused: boolean,
   Duration: number,
-  Timestamp: number
+  Timestamp: number,
+  Technical: boolean
 }
 
 export type Setting = {

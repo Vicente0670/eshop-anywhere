@@ -125,6 +125,7 @@
 
       .metadata {
         display: flex;
+        height: calc(var(--app-scale-media-height) / 2);
 
         &>div {
           flex: 1 1 0%;
@@ -189,17 +190,27 @@
       .controls {
         display: flex;
         flex: 1 1 0%;
+        flex-direction: column;
         align-items: center;
         justify-content: center;
-        background: red;
+        height: calc(var(--app-scale-media-height) / 2);
+        background: #ffffff10;
 
         button {
-          aspect-ratio: 1;
-          height: 1.33rem;
+          aspect-ratio: 2 / 1;
+          height: 1rem;
           border-radius: 1rem;
-          background: transparent;
           background-image: linear-gradient(to top, #000, #fff);
+          background-color: transparent;
+          background-repeat: no-repeat;
+          background-position: center;
+          background-size: 33%;
           outline-color: transparent;
+
+          &:active {
+            background-color: #ffffff15;
+            transform: translateY(1px);
+          }
         }
 
         .media-container {
@@ -208,20 +219,61 @@
           justify-content: center;
           gap: .5rem;
           margin: 0 auto;
-          height: 100%;
-          width: min-content;
-        }
+          height: 50%;
 
-        .prev-container {}
+          .btn-prev { background-image: url("/public/icons/previous.svg"); }
+          .btn-prev-10 { background-image: url("/public/icons/triangle_l.svg"); }
+          .btn-control { background-image: url("/public/icons/play.svg"); } /* default */
+          .btn-next-10 { background-image: url("/public/icons/triangle_r.svg"); }
+          .btn-next { background-image: url("/public/icons/next.svg"); }
+        }
 
         .progress-container {
           display: flex;
-          justify-content: center;
           align-items: center;
-          height: auto;
+          margin: 0 auto;
+          height: 50%;
+          width: min(80%, 30rem);
+
+          .progress {
+            appearance: none;
+            width: 100%;
+            background: none;
+            outline: none;
+
+            /* Ah yes. "Non-standard". Yet it's been around since the 32nd version of Chrome. Sureeeee buddy. */
+            &::-webkit-slider-thumb {
+              appearance: none;
+              background: var(--app-color-slider-thumb-default);
+              margin-top: -.2rem;
+              height: .8rem;
+              width: .5rem;
+              border-radius: .15rem;
+              transition: margin .25s ease;
+            }
+
+            &::-webkit-slider-runnable-track {
+              height: .5rem;
+              border-radius: .15rem;
+              background: var(--app-color-slider-track);
+              transition: height .25s ease;
+            }
+
+            &::-webkit-slider-runnable-track:hover {
+              height: .8rem;
+            }
+
+          }
+
         }
 
-        .next-container {}
+        .progress-container:has(.progress:hover) {
+          
+          .progress::-webkit-slider-thumb {
+            margin-top: 0;
+          }
+
+        }
 
       }
 
