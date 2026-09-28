@@ -1,7 +1,7 @@
 import "./App.css";
 import { useEffect, useRef } from "react";
 import { AppSettingsPort, Brand, IsDev, LogoMinAppearanceHeight, MusicURL, MusicURLSystem, type Message, type MusicContainer } from "./Constants.ts";
-import { Settings, type SettingsLayout, type Setting, SettingQuery, verifySettings, SettingDescriptions, type SettingIds, SettingNumberData, type SettingKeys, ServiceCommands, type MediaContent } from "./Settings.ts";
+import { Settings, type SettingsLayout, type Setting, SettingQuery, verifySettings, SettingDescriptions, type SettingIds, SettingNumberData, type SettingKeys, ServiceCommands, type MediaContent, MediaCommands } from "./Settings.ts";
 import Tooltip from "./components/Tooltip.tsx";
 import { setMilliseconds, setSeconds, setMinutes } from "./Time.ts";
 
@@ -12,14 +12,17 @@ export default function App() {
   const newSettings = useRef<Setting>(Object());
   const logo = useRef<HTMLElement>(null);
   const media = useRef<HTMLFieldSetElement>(null);
+  const musicPlayerScrubber = useRef<HTMLInputElement>(null);
   
   const musicTitle = useRef<HTMLHeadingElement>(null);
   const musicAlbum = useRef<HTMLParagraphElement>(null);
   const musicTimestamp = useRef<HTMLSpanElement>(null);
   const musicDuration = useRef<HTMLSpanElement>(null);
 
+  const numericTimestamp = useRef<number>(0);
   const numericDuration = useRef<number>(0);
   const isMusicPaused = useRef<boolean>(false);
+
 
   const settingsEntries = Object.entries(Settings);
 
@@ -57,6 +60,8 @@ export default function App() {
 
     const timeElapsed: string = `${setMinutes(timestamp)}:${setSeconds(timestamp)}.${setMilliseconds(timestamp)}`;
     musicTimestamp.current.textContent = timeElapsed;
+    numericTimestamp.current = timestamp;
+    musicPlayerScrubber.current!.valueAsNumber = timestamp;
 
     requestAnimationFrame(() => updateTime(timestamp + ((performance.now() - start) / 1000)));
   }
@@ -77,8 +82,9 @@ export default function App() {
     const album = musicAlbum.current;
     const time = musicTimestamp.current;
     const dur = musicDuration.current;
+    const scrubber = musicPlayerScrubber.current;
 
-    if (!name || !album || !time || !dur) return;
+    if (!name || !album || !time || !dur || !scrubber) return;
 
     let content: MusicContainer;
 
@@ -98,8 +104,12 @@ export default function App() {
     album.textContent = albums;
     time.textContent  = timeElapsed;
     dur.textContent   = totalTime;
+    scrubber.max      = totalTime.toString();
 
     numericDuration.current = duration;
+
+    console.warn(timestamp);
+
     updatePaused(msg.Paused);
     updateTime(timestamp);
     musicTitleScroll();
@@ -110,6 +120,46 @@ export default function App() {
       console.groupEnd();
     }
   }
+
+  async function requestMediaChange(change: string) {
+    const msg: Message = {
+      Type: change
+    };
+
+    if (musicPlayerScrubber.current != null) {
+      if (change === MediaCommands.Scrub) {
+        isMusicPaused.current = true;
+        msg.Value = musicPlayerScrubber.current.valueAsNumber;
+      }
+      else if (change === MediaCommands.EndScrub) {
+        isMusicPaused.current = false;
+        msg.Value = musicPlayerScrubber.current.valueAsNumber;
+      }
+    }
+
+    if (IsDev) {
+      console.groupCollapsed(requestMediaChange.name + "() - Requested Data");
+      console.info(msg);
+      console.groupEnd();
+    }
+
+    const response = await chrome.runtime.sendMessage(msg)
+      .catch(e => console.error(requestMediaChange.name + "() - Media could not be requested: " + e));
+
+    return response;
+  }
+
+  async function previousSong() {
+    if (numericTimestamp.current > 3)
+      return await requestMediaChange(MediaCommands.SetToBeginning);
+    return await requestMediaChange(MediaCommands.Previous);
+  }
+  async function previousTenSeconds() { await requestMediaChange(MediaCommands.Previous10); }
+  async function playPauseToggle() { await requestMediaChange(MediaCommands.PlayPause); } // perhaps toggle play/pause for timer locally too?
+  async function nextTenSeconds() { await requestMediaChange(MediaCommands.Next10); }
+  async function nextSong() { await requestMediaChange(MediaCommands.Next); }
+  async function beginScrub() { await requestMediaChange(MediaCommands.Scrub); }
+  async function endScrub() { await requestMediaChange(MediaCommands.EndScrub); }
 
   function serviceReceiveStatus(msg: string) {
     console.log(msg);
@@ -374,18 +424,18 @@ export default function App() {
                 htmlFor="music-progress"
                 className="progress-label"
               >
-                <span id="music-progress-current-time" ref={musicTimestamp}>00:00</span>/
-                <span id="music-progress-full-time" ref={musicDuration}>00:00</span>
+                <span id="music-progress-current-time" ref={musicTimestamp}>00:00.000</span>/
+                <span id="music-progress-full-time" ref={musicDuration}>00:00.000</span>
               </label>
             </div>
           </div>
           <div className="controls">
             <div className="media-container">
-              <button type="button" className="btn-prev" aria-label="Previous track" />
-              <button type="button" className="btn-prev-10" aria-label="Go back 10 seconds" />
-              <button type="button" className="btn-control" aria-label="Play/Pause" />
-              <button type="button" className="btn-next-10" aria-label="Skip 10 seconds" />
-              <button type="button" className="btn-next" aria-label="Next track" />
+              <button type="button" className="btn-prev" onClick={previousSong} aria-label="Previous track" />
+              <button type="button" className="btn-prev-10" onClick={previousTenSeconds} aria-label="Go back 10 seconds" />
+              <button type="button" className="btn-control" onClick={playPauseToggle} aria-label="Play/Pause" />
+              <button type="button" className="btn-next-10" onClick={nextTenSeconds} aria-label="Skip 10 seconds" />
+              <button type="button" className="btn-next" onClick={nextSong} aria-label="Next track" />
             </div>
             <div className="progress-container">
               <input
@@ -395,6 +445,11 @@ export default function App() {
                 min={0}
                 max={100}
                 step={1 / 20}
+                ref={musicPlayerScrubber}
+                onMouseDown={beginScrub}
+                onMouseUp={endScrub}
+                onSeeking={beginScrub}
+                onSeeked={endScrub}
               />
             </div>
           </div>

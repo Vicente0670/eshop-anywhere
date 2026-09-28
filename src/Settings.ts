@@ -93,7 +93,7 @@ export const SettingDescriptions: SettingInfo = {
   },
   Resume: {
     Id: "description-resume",
-    Description: "Plays the music you last left off when you return to a shopping site."
+    Description: "Plays the music that last played when you return to a shopping site."
   },
   Paused: {
     Id: "description-paused",
@@ -109,9 +109,20 @@ export const SettingDescriptions: SettingInfo = {
   }
 }
 
-export const ServiceCommands: { [K in Commands]: string } = {
+export const ServiceCommands: { [K in CommandsList]: string } = {
   Kill: "kill",
   Report: "report",
+}
+
+export const MediaCommands: { [K in MediaQueriesList]: string } = {
+  SetToBeginning: "SetToBeginning",
+  Previous: "Previous",
+  Previous10: "Previous10",
+  PlayPause: "PlayPause",
+  Next10: "Next10",
+  Next: "Next",
+  Scrub: "Scrub",
+  EndScrub: "EndScrub"
 }
 
 export const SettingNumberData: NumberFormat = {
@@ -122,7 +133,8 @@ export const SettingNames: string[] = Object.keys(Settings);
 
 export const SettingQuery: string = "settings-query";
 
-type Commands = "Kill" | "Report";
+type CommandsList = "Kill" | "Report";
+type MediaQueriesList = "SetToBeginning" | "Previous" | "Previous10" | "PlayPause" | "Next10" | "Next" | "Scrub" | "EndScrub";
 
 type NumberFormat = {
   [Id in SettingKeys]?: object[];

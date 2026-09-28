@@ -130,13 +130,8 @@ async function queryOptions(
 ) {
   const functionName = delimiter(queryOptions.name);
 
-  if (message.Type === "yo") {
-    console.warn("bro why is this even a thing that can happen");
-    return;
-  }
-
   if (IsDev) {
-    console.group();
+    console.groupCollapsed("background.ts");
     console.info(`${functionName}Settings have been queried.`);
     console.info(sender);
     console.groupEnd();

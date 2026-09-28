@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { MusicURLBase, MusicURL, type Message, IsDev, MusicURLSystem, MusicTechnicalIds } from "../Constants.ts";
-import { SettingQuery, Settings, type MediaContent, type Setting } from "../Settings.ts";
+import { MediaCommands, SettingQuery, Settings, type MediaContent, type Setting } from "../Settings.ts";
 
 export default function MusicPlayer() {
   const [loaded, isLoaded] = useState(false);
@@ -25,13 +25,9 @@ export default function MusicPlayer() {
     if (!(e instanceof HTMLAudioElement)) return;
     if (g && (e.muted || e.volume === 0))
       e.pause();
-    else {
-      const playRequest = e.play();
-      if (playRequest !== undefined) {
-        playRequest.catch(e => {
-          console.error("updateGrace(): An error occurred while attempting to play music.\n" + e)
-        });
-      }
+    else if (e.paused && e.networkState !== HTMLMediaElement.NETWORK_NO_SOURCE) {
+      e.play()
+        .catch(err => "updateGrace(): An error occurred while attempting to play music.\n" + err + "\ne.networkState:" + e.networkState);
     }
   }
 
@@ -168,7 +164,7 @@ export default function MusicPlayer() {
 
     if (player instanceof HTMLAudioElement) {
       player.addEventListener("ended", nextSongEvent);
-      chrome.runtime.onMessage.addListener(updateValues);
+      chrome.runtime.onMessage.addListener(messageParser);
     }
 
     function setDocumentTitle(id?: number) {
@@ -206,11 +202,100 @@ export default function MusicPlayer() {
         queryTrack(index.current + 1);
     }
 
-    async function updateValues(
-      message: Message,
-      sender: chrome.runtime.MessageSender,
-      sendResponse: (response: number) => void
-    ) {
+    async function mediaRequestHandler(message: Message): Promise<number> {
+      let res: number;
+
+      switch (message.Type) {
+
+        case MediaCommands.EndScrub: {
+          const p = tag.current;
+          if (!p)
+            res = -1;
+          else {
+            const paused = false;
+            updatePaused(paused);
+            res = p.currentTime;
+            console.warn("HEY STOP STOP STOP");
+          }
+          break;
+        }
+
+        case MediaCommands.Scrub: {
+          const p = tag.current;
+          const timestamp: number = message.Value as number;
+          if (!p || !timestamp)
+            res = -1;
+          else {
+            const paused = true;
+            updatePaused(paused);
+            res = p.currentTime = timestamp;
+          }
+          break;
+        }
+
+        case MediaCommands.SetToBeginning: {
+          const p = tag.current;
+          if (!p)
+            res = -1;
+          else
+            res = p.currentTime = 0;
+          break;
+        }
+
+        case MediaCommands.Previous: {
+          res = index.current - 1;
+          updateTrack(res);
+          break;
+        }
+
+        case MediaCommands.Previous10: {
+          const p = tag.current;
+          if (!p)
+            res = -1;
+          else
+            res = (p.currentTime -= 10);
+          break;
+        }
+
+        case MediaCommands.PlayPause: {
+          const p = tag.current;
+          if (!p)
+            res = -1;
+          else {
+            if (p.paused)
+              p.play()
+                .catch(e => console.log(mediaRequestHandler.name + "() - " + e));
+            else
+              p.pause();
+            res = p.paused ? 1 : 0;
+          }
+          break;
+        }
+
+        case MediaCommands.Next10: {
+          const p = tag.current;
+          if (!p)
+            res = -1;
+          else
+            res = (p.currentTime += 10);
+          break;
+        }
+
+        case MediaCommands.Next: {
+          res = index.current + 1;
+          updateTrack(res);
+          break;
+        }
+
+        default:
+          res = -1;
+      }
+
+      return res;
+    }
+
+    // refactor this WHOLE generation
+    async function settingsHandler(message: Message) {
       if (
         message.Type === Settings.Volume.Key &&
         (message.Event === "change" || message.Event === "input")
@@ -218,25 +303,25 @@ export default function MusicPlayer() {
         updateVolume(message.Value as number);
       }
 
-      if (message.Event === "change") {
+      else if (message.Event === "change") {
 
         if (message.Type === Settings.Muted.Key) {
           updateMute(message.Value as boolean);
         }
-  
-        if (message.Type === Settings.Loop.Key) {
+
+        else if (message.Type === Settings.Loop.Key) {
           updateLoop(message.Value as boolean);
         }
 
-        if (message.Type === Settings.Grace.Key) {
+        else if (message.Type === Settings.Grace.Key) {
           updateGrace(message.Value as boolean);
         }
 
-        if (message.Type === Settings.Paused.Key) {
+        else if (message.Type === Settings.Paused.Key) {
           updatePaused(message.Value as boolean);
         }
-        
-        if (message.Type === Settings.Track.Key) {
+
+        else if (message.Type === Settings.Track.Key) {
           await updateTrack(message.Value as number ?? 0);
         }
 
@@ -255,13 +340,24 @@ export default function MusicPlayer() {
           }
         }
       }
-
+    }
+    
+    async function messageParser(
+      message: Message,
+      sender: chrome.runtime.MessageSender,
+      sendResponse: (response: number) => void
+    ) {
+      const res = await mediaRequestHandler(message);
+      settingsHandler(message);
       updateAppMedia();
 
       if (IsDev) {
         console.log(sender);
         console.log(sendResponse);
       }
+
+      if (res > -1)
+        return sendResponse(res);
     }
 
     async function initialize() {
@@ -317,7 +413,7 @@ export default function MusicPlayer() {
         player.removeEventListener("ended", nextSongEvent);
       }
 
-      chrome.runtime.onMessage.removeListener(updateValues);
+      chrome.runtime.onMessage.removeListener(messageParser);
     }
   }, [
     loaded,
