@@ -21,6 +21,7 @@ export default function App() {
 
   const numericTimestamp = useRef<number>(0);
   const numericDuration = useRef<number>(0);
+  const callBackId = useRef<number>(0);
   const isMusicPaused = useRef<boolean>(false);
 
 
@@ -76,7 +77,7 @@ export default function App() {
     numericTimestamp.current = timestamp;
     musicPlayerScrubber.current.valueAsNumber = timestamp;
 
-    requestAnimationFrame(() => updateTime(timestamp + ((performance.now() - start) / 1000)));
+    callBackId.current = requestAnimationFrame(() => updateTime(timestamp + ((performance.now() - start) / 1000)));
   }
 
   function updatePaused(p?: boolean) {
@@ -126,9 +127,6 @@ export default function App() {
     updatePaused(msg.Paused);
     updateTime(timestamp);
     musicTitleScroll();
-    console.groupCollapsed("yo i ran");
-    console.log(msg);
-    console.groupEnd();
 
     if (IsDev) {
       console.group(updateMedia.name);
@@ -139,11 +137,6 @@ export default function App() {
 
   async function requestMediaChange(change: string) {
     const msg: Message = { Type: change };
-
-    // if (numericInterruptedTimestamp.current < 0) {
-    //   musicPlayerScrubber.current!.valueAsNumber = numericInterruptedTimestamp.current;
-    //   numericInterruptedTimestamp.current = -1;
-    // }
 
     if (musicPlayerScrubber.current != null) {
 
@@ -169,12 +162,16 @@ export default function App() {
   async function previousSong() {
     if (numericTimestamp.current > 3)
       return await requestMediaChange(MediaCommands.SetToBeginning);
+    cancelAnimationFrame(callBackId.current);
     return await requestMediaChange(MediaCommands.Previous);
   }
   async function previousTenSeconds() { await requestMediaChange(MediaCommands.Previous10); }
   async function playPauseToggle() { await requestMediaChange(MediaCommands.PlayPause); } // perhaps toggle play/pause for timer locally too?
   async function nextTenSeconds() { await requestMediaChange(MediaCommands.Next10); }
-  async function nextSong() { await requestMediaChange(MediaCommands.Next); }
+  async function nextSong() {
+    cancelAnimationFrame(callBackId.current);
+    await requestMediaChange(MediaCommands.Next); 
+  }
   async function beginScrub(ev: React.MouseEvent) {
     if (ev.button !== 0) return; // only reacts to left-click
     isMusicPaused.current = true;
@@ -187,6 +184,9 @@ export default function App() {
   async function endScrub() {
     isMusicPaused.current = false;
     await requestMediaChange(MediaCommands.EndScrub);
+  }
+  async function requestGeneralUpdate() {
+    await requestMediaChange(MediaCommands.GeneralUpdate);
   }
 
   async function updateUiTimestamp() {
@@ -392,7 +392,7 @@ export default function App() {
           <Tooltip Id={dataObj.Id} Description={dataObj.Description} />
           <label className="label" htmlFor={Prop.Key} ref={auditSettingsRef}>
             <p className="status" id={Name} />
-            <select className={`select`} id={Prop.Key} name={Name}>
+            <select className={`select`} id={Prop.Key} onChange={requestGeneralUpdate} name={Name}>
               {
                 Object.values(SettingNumberData[Prop.Key as SettingKeys] as Array<object>).map(
                   (value, index) => injectSelections(value, index, Prop.Key)

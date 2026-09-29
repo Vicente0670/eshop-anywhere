@@ -115,6 +115,7 @@ export const ServiceCommands: { [K in CommandsList]: string } = {
 }
 
 export const MediaCommands: { [K in MediaQueriesList]: string } = {
+  // Arbitrary names; Ensure the names are equivalent when debugging!
   SetToBeginning: "SetToBeginning",
   Previous: "Previous",
   Previous10: "Previous10",
@@ -122,7 +123,8 @@ export const MediaCommands: { [K in MediaQueriesList]: string } = {
   Next10: "Next10",
   Next: "Next",
   Scrub: "Scrub",
-  EndScrub: "EndScrub"
+  EndScrub: "EndScrub",
+  GeneralUpdate: "GeneralUpdate"
 }
 
 export const SettingNumberData: NumberFormat = {
@@ -134,7 +136,7 @@ export const SettingNames: string[] = Object.keys(Settings);
 export const SettingQuery: string = "settings-query";
 
 type CommandsList = "Kill" | "Report";
-type MediaQueriesList = "SetToBeginning" | "Previous" | "Previous10" | "PlayPause" | "Next10" | "Next" | "Scrub" | "EndScrub";
+type MediaQueriesList = "SetToBeginning" | "Previous" | "Previous10" | "PlayPause" | "Next10" | "Next" | "Scrub" | "EndScrub" | "GeneralUpdate";
 
 type NumberFormat = {
   [Id in SettingKeys]?: object[];

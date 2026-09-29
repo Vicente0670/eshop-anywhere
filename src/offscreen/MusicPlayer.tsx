@@ -436,6 +436,7 @@ export default function MusicPlayer() {
         ref={tag}
         id={audioId}
         muted={false}
+        onCanPlay={updateAppMedia}
       />
     </div>
   );
