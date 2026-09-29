@@ -3,7 +3,7 @@ import { useEffect, useRef } from "react";
 import { AppSettingsPort, Brand, IsDev, LogoMinAppearanceHeight, MusicURL, MusicURLSystem, type Message, type MusicContainer } from "./Constants.ts";
 import { Settings, type SettingsLayout, type Setting, SettingQuery, verifySettings, SettingDescriptions, type SettingIds, SettingNumberData, type SettingKeys, ServiceCommands, type MediaContent, MediaCommands } from "./Settings.ts";
 import Tooltip from "./components/Tooltip.tsx";
-import { setMilliseconds, setSeconds, setMinutes } from "./Time.ts";
+import { formatMMSSMM } from "./Time.ts";
 
 export default function App() {
   const service = useRef<chrome.runtime.Port>(null);
@@ -53,15 +53,26 @@ export default function App() {
   }
 
   function updateTime(timestamp: number) {
-    if (!musicTimestamp.current || !musicDuration.current || numericDuration.current == null) return;
-    if (timestamp > numericDuration.current) return requestAnimationFrame(() => updateTime(0));
-    if (isMusicPaused.current) return;
     const start = performance.now();
 
-    const timeElapsed: string = `${setMinutes(timestamp)}:${setSeconds(timestamp)}.${setMilliseconds(timestamp)}`;
+    if (
+      !musicTimestamp.current ||
+      !musicDuration.current ||
+      !musicPlayerScrubber.current ||
+      numericDuration.current == null
+    )
+      return;
+    
+    if (timestamp > numericDuration.current || timestamp < 0)
+      return requestAnimationFrame(() => updateTime(0));
+
+    if (isMusicPaused.current)
+      return;
+
+    const timeElapsed: string = formatMMSSMM(timestamp);
     musicTimestamp.current.textContent = timeElapsed;
     numericTimestamp.current = timestamp;
-    musicPlayerScrubber.current!.valueAsNumber = timestamp;
+    musicPlayerScrubber.current.valueAsNumber = timestamp;
 
     requestAnimationFrame(() => updateTime(timestamp + ((performance.now() - start) / 1000)));
   }
@@ -97,22 +108,25 @@ export default function App() {
     const timestamp: number = msg.Timestamp;
     const duration: number = msg.Duration;
 
-    const timeElapsed: string = `${setMinutes(timestamp)}:${setSeconds(timestamp)}.${setMilliseconds(timestamp)}`;
-    const totalTime: string = `${setMinutes(duration)}:${setSeconds(duration)}.${setMilliseconds(duration)}`;
+    const timeElapsed: string = formatMMSSMM(timestamp);
+    const totalTime: string = formatMMSSMM(duration);
 
     name.textContent  = content.Title;
     album.textContent = albums;
     time.textContent  = timeElapsed;
     dur.textContent   = totalTime;
-    scrubber.max      = totalTime.toString();
-
+    scrubber.max      = duration.toString();
+    
     numericDuration.current = duration;
-
-    console.warn(timestamp);
+    
+    scrubber.valueAsNumber = timestamp;
 
     updatePaused(msg.Paused);
     updateTime(timestamp);
     musicTitleScroll();
+    console.groupCollapsed("yo i ran");
+    console.log(msg);
+    console.groupEnd();
 
     if (IsDev) {
       console.group(updateMedia.name);
@@ -122,19 +136,20 @@ export default function App() {
   }
 
   async function requestMediaChange(change: string) {
-    const msg: Message = {
-      Type: change
-    };
+    const msg: Message = { Type: change };
+
+    // if (numericInterruptedTimestamp.current < 0) {
+    //   musicPlayerScrubber.current!.valueAsNumber = numericInterruptedTimestamp.current;
+    //   numericInterruptedTimestamp.current = -1;
+    // }
 
     if (musicPlayerScrubber.current != null) {
-      if (change === MediaCommands.Scrub) {
-        isMusicPaused.current = true;
+
+      if (change === MediaCommands.Scrub)
         msg.Value = musicPlayerScrubber.current.valueAsNumber;
-      }
-      else if (change === MediaCommands.EndScrub) {
-        isMusicPaused.current = false;
+
+      else if (change === MediaCommands.EndScrub)
         msg.Value = musicPlayerScrubber.current.valueAsNumber;
-      }
     }
 
     if (IsDev) {
@@ -158,8 +173,27 @@ export default function App() {
   async function playPauseToggle() { await requestMediaChange(MediaCommands.PlayPause); } // perhaps toggle play/pause for timer locally too?
   async function nextTenSeconds() { await requestMediaChange(MediaCommands.Next10); }
   async function nextSong() { await requestMediaChange(MediaCommands.Next); }
-  async function beginScrub() { await requestMediaChange(MediaCommands.Scrub); }
-  async function endScrub() { await requestMediaChange(MediaCommands.EndScrub); }
+  async function beginScrub(ev: React.MouseEvent) {
+    if (ev.button !== 0) return; // only reacts to left-click
+    isMusicPaused.current = true;
+    updateUiTimestamp();
+    await requestMediaChange(MediaCommands.Scrub);
+  }
+  async function whileScrubbing(ev: React.MouseEvent) {
+    if (ev.button !== 0) return;
+    updateUiTimestamp();
+  }
+  async function endScrub() {
+    isMusicPaused.current = false;
+    await requestMediaChange(MediaCommands.EndScrub);
+  }
+
+  async function updateUiTimestamp() {
+    const m = musicPlayerScrubber.current;
+    const t = musicTimestamp.current;
+    if (!m || !t) return;
+    t.textContent = formatMMSSMM(m.valueAsNumber);
+  }
 
   function serviceReceiveStatus(msg: string) {
     console.log(msg);
@@ -443,13 +477,12 @@ export default function App() {
                 className="progress"
                 name="music-progress"
                 min={0}
-                max={100}
-                step={1 / 20}
+                max={numericDuration.current ?? 100}
+                step={1 / 500}
                 ref={musicPlayerScrubber}
                 onMouseDown={beginScrub}
+                onMouseMove={whileScrubbing}
                 onMouseUp={endScrub}
-                onSeeking={beginScrub}
-                onSeeked={endScrub}
               />
             </div>
           </div>

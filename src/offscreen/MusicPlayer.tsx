@@ -207,28 +207,27 @@ export default function MusicPlayer() {
 
       switch (message.Type) {
 
-        case MediaCommands.EndScrub: {
+        case MediaCommands.Scrub: {
           const p = tag.current;
-          if (!p)
+          const timestamp: number = message.Value as number;
+          if (!p || timestamp == null)
             res = -1;
           else {
-            const paused = false;
-            updatePaused(paused);
-            res = p.currentTime;
-            console.warn("HEY STOP STOP STOP");
+            p.pause();
+            res = p.currentTime = timestamp;
           }
           break;
         }
 
-        case MediaCommands.Scrub: {
+        case MediaCommands.EndScrub: {
           const p = tag.current;
           const timestamp: number = message.Value as number;
-          if (!p || !timestamp)
+          if (!p || timestamp == null)
             res = -1;
           else {
-            const paused = true;
-            updatePaused(paused);
             res = p.currentTime = timestamp;
+            const paused = false;
+            updatePaused(paused);
           }
           break;
         }
@@ -262,11 +261,7 @@ export default function MusicPlayer() {
           if (!p)
             res = -1;
           else {
-            if (p.paused)
-              p.play()
-                .catch(e => console.log(mediaRequestHandler.name + "() - " + e));
-            else
-              p.pause();
+            updatePaused(!p.paused);
             res = p.paused ? 1 : 0;
           }
           break;
@@ -347,9 +342,13 @@ export default function MusicPlayer() {
       sender: chrome.runtime.MessageSender,
       sendResponse: (response: number) => void
     ) {
+
       const res = await mediaRequestHandler(message);
       settingsHandler(message);
-      updateAppMedia();
+
+      if (message.Type != MediaCommands.Scrub)
+        updateAppMedia();
+
 
       if (IsDev) {
         console.log(sender);
@@ -437,8 +436,6 @@ export default function MusicPlayer() {
         ref={tag}
         id={audioId}
         muted={false}
-        onPlay={updateAppMedia}
-        onPause={updateAppMedia}
       />
     </div>
   );
