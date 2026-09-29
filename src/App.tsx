@@ -66,8 +66,10 @@ export default function App() {
     if (timestamp > numericDuration.current || timestamp < 0)
       return requestAnimationFrame(() => updateTime(0));
 
-    if (isMusicPaused.current)
+    if (isMusicPaused.current) {
+      updateUiTimestamp();
       return;
+    }
 
     const timeElapsed: string = formatMMSSMM(timestamp);
     musicTimestamp.current.textContent = timeElapsed;
@@ -176,7 +178,6 @@ export default function App() {
   async function beginScrub(ev: React.MouseEvent) {
     if (ev.button !== 0) return; // only reacts to left-click
     isMusicPaused.current = true;
-    updateUiTimestamp();
     await requestMediaChange(MediaCommands.Scrub);
   }
   async function whileScrubbing(ev: React.MouseEvent) {
