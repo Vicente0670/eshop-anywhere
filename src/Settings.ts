@@ -28,12 +28,12 @@ export const Settings: Setting = {
     Type: "checkbox",
     Value: false
   },
-  Continuous: {
-    Name: "Continuous BG Play",
-    Key: "settings-continuous",
-    Type: "checkbox",
-    Value: false
-  },
+  // Continuous: {
+  //   Name: "Continuous BG Play",
+  //   Key: "settings-continuous",
+  //   Type: "checkbox",
+  //   Value: false
+  // },
   Effects: {
     Name: "SFX",
     Key: "settings-sfx",
@@ -83,10 +83,10 @@ export const SettingDescriptions: SettingInfo = {
     Id: "description-grace",
     Description: "Pauses playback while muted or at 0% volume. Is not dependent on your PC's volume, only the extension's volume. Sorry about that."
   },
-  Continuous: {
-    Id: "description-continuous",
-    Description: "Continues music as normal as if the player always exists. Must have a shopping site open to continue playback."
-  },
+  // Continuous: {
+  //   Id: "description-continuous",
+  //   Description: "Continues music as normal as if the player always exists. Must have a shopping site open to continue playback."
+  // },
   Effects: {
     Id: "description-sfx",
     Description: "Plays sound effects from the 3DS while browsing a shopping site."
@@ -134,6 +134,7 @@ export const SettingNumberData: NumberFormat = {
 export const SettingNames: string[] = Object.keys(Settings);
 
 export const SettingQuery: string = "settings-query";
+export const SettingInstantModify: string = "settings-instant-modify";
 
 type CommandsList = "Kill" | "Report";
 type MediaQueriesList = "SetToBeginning" | "Previous" | "Previous10" | "PlayPause" | "Next10" | "Next" | "Scrub" | "EndScrub" | "GeneralUpdate";
@@ -150,6 +151,14 @@ export type MediaContent = {
   Technical: boolean
 }
 
+export type MediaContentOptional = {
+  Index?: number,
+  Paused?: boolean,
+  Duration?: number,
+  Timestamp?: number,
+  Technical?: boolean
+}
+
 export type Setting = {
   [Setting in SettingIds]: SettingsLayout;
 }
@@ -163,7 +172,7 @@ export type SettingIds =
   "Muted" |
   "Loop" |
   "Grace" |
-  "Continuous" |
+  // "Continuous" |
   "Effects" |
   "Resume" |
   "Paused" |
@@ -175,7 +184,7 @@ export type SettingKeys =
   "settings-muted" |
   "settings-loop" |
   "settings-grace" |
-  "settings-continuous" |
+  // "settings-continuous" |
   "settings-sfx" |
   "settings-resume" |
   "settings-paused" |
@@ -187,7 +196,7 @@ export type SettingDescIds =
   "description-muted" |
   "description-loop" |
   "description-grace" |
-  "description-continuous" |
+  // "description-continuous" |
   "description-sfx" |
   "description-resume" |
   "description-paused" |

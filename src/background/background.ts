@@ -1,5 +1,5 @@
 import { AppSettingsPort, IsDev, Keys, MusicTechnicalIds, PurchasePaths, RatingPaths, SettingsPaths, Websites, WishlistPaths, type Message } from "../Constants.ts";
-import { ServiceCommands, SettingQuery, Settings, verifySettings, type Setting, type SettingIds } from "../Settings.ts";
+import { ServiceCommands, SettingInstantModify, SettingQuery, Settings, verifySettings, type Setting, type SettingIds } from "../Settings.ts";
 
 const tabQueryOptions: chrome.tabs.QueryInfo = {
   windowType: "normal",
@@ -150,7 +150,37 @@ async function queryOptions(
     return true;
   }
 
+  async function updateResumedTrack(track: number) {
+
+    const functionName = delimiter(updateResumedTrack.name);
+
+    if (IsDev) {
+      console.groupCollapsed(functionName);
+      console.info("Track number: " + track);
+      console.groupEnd();
+    }
+
+    if (importedSettings && importedSettings.Resume.Value == true) {
+      importedSettings.Track.Value = track;
+      return true;
+    }
+
+    const storage: Setting = await chrome.storage.sync.get(null);
+
+    if (storage.Resume.Value == true) {
+      storage.Track.Value = track;
+      const updatedStorage: Setting = verifySettings(storage);
+      return await chrome.storage.sync.set(updatedStorage);
+    }
+
+    return true;
+
+  }
+
   if (message.Type === SettingQuery) {
+
+    if (message.Event === SettingInstantModify)
+      return await updateResumedTrack(message.Value as number);
 
     if (message.Value)
       return await mutateSettings(message.Value as Setting);
