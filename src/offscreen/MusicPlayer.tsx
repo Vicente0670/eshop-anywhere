@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { MusicURLBase, MusicURL, type Message, IsDev, MusicURLSystem, MusicTechnicalIds } from "../Constants.ts";
-import { MediaCommands, SettingQuery, Settings, type MediaContent, type Setting } from "../Settings.ts";
+import { MediaCommands, SettingInstantModify, SettingQuery, Settings, type MediaContent, type MediaContentOptional, type Setting } from "../Settings.ts";
 
 export default function MusicPlayer() {
   const [loaded, isLoaded] = useState(false);
@@ -64,9 +64,9 @@ export default function MusicPlayer() {
 
 
 
-  // [ ### Callbacks ### ]
+  // [ ### Callbacks and dependencies ### ]
 
-  const updateAppMedia = useCallback(async () => {
+  const updateAppMedia = useCallback(async (override?: MediaContentOptional) => {
     const e = tag.current;
     if (!e || !(e instanceof HTMLAudioElement)) return;
 
@@ -79,11 +79,12 @@ export default function MusicPlayer() {
 
     const msg: MediaContent = {
       Index: finalIndex,
-      Paused: e.paused,
+      Paused: override?.Paused ?? e.paused,
       Duration: e.duration,
       Timestamp: e.currentTime,
       Technical: technicalMusicPlaying.current
     };
+    // directed to App.tsx
     return await chrome.runtime.sendMessage(msg);
   }, [
     technicalMusicType
@@ -104,6 +105,15 @@ export default function MusicPlayer() {
     i = verifyIndex(i);
     index.current = i;
     document.title = MusicURL[i].Title;
+
+    const msg: Message = {
+      Type: SettingQuery,
+      Value: i,
+      Event: SettingInstantModify
+    }
+    // directed to background.js, no callback needed
+    chrome.runtime.sendMessage(msg);
+
     return MusicURLBase + MusicURL[i].URL;
   }, [index]);
 
@@ -111,6 +121,7 @@ export default function MusicPlayer() {
     const e = tag.current;
     if (!(e instanceof HTMLAudioElement)) return;
     e.src = requestURL(i);
+
     await updateAppMedia();
   }, [requestURL, updateAppMedia]);
 
@@ -150,7 +161,16 @@ export default function MusicPlayer() {
     updateTrack
   ]);
 
-  // [ ################# ]
+  function updateMetadata() {
+    updateAppMedia({ Paused: false });
+  }
+
+  function updateBuffering() {
+    console.warn("Media is buffering, please wait");
+    updateAppMedia();
+  }
+
+  // [ ################################# ]
 
 
 
@@ -316,9 +336,9 @@ export default function MusicPlayer() {
           updatePaused(message.Value as boolean);
         }
 
-        else if (message.Type === Settings.Track.Key) {
-          await updateTrack(message.Value as number ?? 0);
-        }
+        if (!technicalMusicPlaying.current)
+          if (message.Type === Settings.Track.Key)
+            await updateTrack(message.Value as number ?? 0);
 
         if (message.Type === Settings.Technical.Key && importedSettings.current.Technical.Value as boolean == true) {
           const value = message.Value as number;
@@ -398,7 +418,7 @@ export default function MusicPlayer() {
         isLoaded(true);
       }
       else {
-        console.error(`Music failed to start.\nThe music player either is not recognized, or your browser doesn't support the navigator.mediaSession API... somehow.\nCheck compatibility on [https://caniuse.com/mdn-api_navigator_mediasession].`);
+        console.error(`Music failed to start.\nThe music player either is not recognized, or your browser doesn't support the navigator.mediaSession API\nCheck compatibility on [https://caniuse.com/mdn-api_navigator_mediasession].`);
       }
       return;
     }
@@ -436,7 +456,8 @@ export default function MusicPlayer() {
         ref={tag}
         id={audioId}
         muted={false}
-        onCanPlay={updateAppMedia}
+        onLoadedMetadata={updateMetadata}
+        onWaiting={updateBuffering}
       />
     </div>
   );

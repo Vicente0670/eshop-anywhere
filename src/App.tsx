@@ -76,6 +76,7 @@ export default function App() {
     musicTimestamp.current.textContent = timeElapsed;
     numericTimestamp.current = timestamp;
     musicPlayerScrubber.current.valueAsNumber = timestamp;
+    // check if this runs
 
     callBackId.current = requestAnimationFrame(() => updateTime(timestamp + ((performance.now() - start) / 1000)));
   }
@@ -98,6 +99,8 @@ export default function App() {
     const dur = musicDuration.current;
     const scrubber = musicPlayerScrubber.current;
 
+    console.info(msg);
+
     if (!name || !album || !time || !dur || !scrubber) return;
 
     let content: MusicContainer;
@@ -110,6 +113,9 @@ export default function App() {
     const albums: string = content.Console.toString();
     const timestamp: number = msg.Timestamp;
     const duration: number = msg.Duration;
+
+    if (!msg.Duration)
+      console.info(updateMedia.name + "() - Awaiting track duration metadata...");
 
     const timeElapsed: string = formatMMSSMM(timestamp);
     const totalTime: string = formatMMSSMM(duration);
@@ -170,6 +176,7 @@ export default function App() {
   async function nextTenSeconds() { await requestMediaChange(MediaCommands.Next10); }
   async function nextSong() {
     cancelAnimationFrame(callBackId.current);
+    updatePaused(true);
     await requestMediaChange(MediaCommands.Next); 
   }
   async function beginScrub(ev: React.MouseEvent) {
