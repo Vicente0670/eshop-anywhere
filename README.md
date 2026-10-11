@@ -26,19 +26,19 @@ If you want a site to be added, create an issue on this repo.
 ## FAQ
 In reality, as of writing this, nobody asked these questions.
 
-**Why doesn't the extension work?**
+### Why doesn't the extension work?
 The extension only works on Chromium browsers v109+ that support Manifest V3 extensions.
 The browser should also support the Offscreen API. The extension will not depend on this API in further updates.
 
-**When will you not depend on the Offscreen API?**
+### When will you not depend on the Offscreen API?
 In a future update that will also port the extension to Firefox.
 
-**When will you port the extension to Firefox?**
+### When will you port the extension to Firefox?
 IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII dunno.
 
 ****
 
-**DISCLAIMER: I DO NOT OWN ANY OF THE MUSIC FILES.**
+# DISCLAIMER: I DO NOT OWN ANY OF THE MUSIC FILES.
 **ALL RIGHTS GO TO THEIR RESPECTIVE OWNERS, AND I DO NOT CLAIM ANY MUSIC AS MY OWN.**
 
 The original source files for the music come from [Khinsider](https://downloads.khinsider.com/game-soundtracks/album/nintendo-eshop-original-soundtrack-2011-2017). Underrated website, so keep it low.
