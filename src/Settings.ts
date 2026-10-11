@@ -34,12 +34,12 @@ export const Settings: Setting = {
   //   Type: "checkbox",
   //   Value: false
   // },
-  Effects: {
-    Name: "SFX",
-    Key: "settings-sfx",
-    Type: "checkbox",
-    Value: false
-  },
+  // Effects: {
+  //   Name: "SFX",
+  //   Key: "settings-sfx",
+  //   Type: "checkbox",
+  //   Value: false
+  // },
   Resume: {
     Name: "Resume Playback",
     Key: "settings-resume",
@@ -87,10 +87,10 @@ export const SettingDescriptions: SettingInfo = {
   //   Id: "description-continuous",
   //   Description: "Continues music as normal as if the player always exists. Must have a shopping site open to continue playback."
   // },
-  Effects: {
-    Id: "description-sfx",
-    Description: "Plays sound effects from the 3DS while browsing a shopping site."
-  },
+  // Effects: {
+  //   Id: "description-sfx",
+  //   Description: "Plays sound effects from the 3DS while browsing a shopping site."
+  // },
   Resume: {
     Id: "description-resume",
     Description: "Plays the music that last played when you return to a shopping site."
@@ -173,7 +173,7 @@ export type SettingIds =
   "Loop" |
   "Grace" |
   // "Continuous" |
-  "Effects" |
+  // "Effects" |
   "Resume" |
   "Paused" |
   "Technical" |
@@ -185,7 +185,7 @@ export type SettingKeys =
   "settings-loop" |
   "settings-grace" |
   // "settings-continuous" |
-  "settings-sfx" |
+  // "settings-sfx" |
   "settings-resume" |
   "settings-paused" |
   "settings-technical" |
@@ -197,7 +197,7 @@ export type SettingDescIds =
   "description-loop" |
   "description-grace" |
   // "description-continuous" |
-  "description-sfx" |
+  // "description-sfx" |
   "description-resume" |
   "description-paused" |
   "description-technical" |

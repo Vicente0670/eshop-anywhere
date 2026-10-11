@@ -1,3 +1,9 @@
+# Development Setup Boilerplate
+
+Use this if you want to run a development environment for this project.
+
+I'm going to clean this up later. Trust.
+
 # React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.

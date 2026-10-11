@@ -82,7 +82,16 @@ async function spawnDocument(tabs: chrome.tabs.Tab[]) {
       reasons: ["AUDIO_PLAYBACK"],
       justification: "Audio controller on shopping website or website of user's choice.",
     };
-    creatingDocument = await chrome.offscreen.createDocument(options);
+    await chrome.runtime.getContexts(contextOptions).then(async (e) => {
+      if (e.length > 0) {
+        console.error(`${functionName}getContexts - The offscreen context "${Keys.OffscreenURL}" already exists.`);
+      }
+      else {
+        creatingDocument = await chrome.offscreen.createDocument(options);
+      }
+    }).catch((err) => {
+      console.error(`${functionName}getContexts - The offscreen context "${Keys.OffscreenURL}" already exists.\n${err}`);
+    });
     creatingDocument = null;
 
     if (IsDev && (await chrome.runtime.getContexts(contextOptions)).length > 0) {
