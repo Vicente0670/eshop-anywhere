@@ -8,7 +8,7 @@ Will port to Firefox and lower versions of Chromium soon.
 ## How to Install
 
 ### Step 1
-Download the CRX file from [the latest release](https://github.com/OWNER/REPOSITORY/releases/latest).
+Download the CRX file from [the latest release](https://github.com/Vicente0670/eshop-anywhere/releases/latest).
 
 ### Step 2
 Go to `chrome://extensions`, and toggle **Developer Mode ON** in the top-right corner.
